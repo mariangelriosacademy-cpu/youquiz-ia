@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { createBrowserClient } from "@supabase/ssr";
@@ -27,18 +27,44 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const { dark, toggleDark } = useTheme();
   const [abierto, setAbierto] = useState(false);
   const [usuario, setUsuario] = useState<any>(null);
+  const [creditos, setCreditos] = useState<number>(0);
 
   useEffect(() => {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
     async function cargar() {
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/login"); return; }
       const { data: perfil } = await supabase.from("profiles").select("*").eq("id", user.id).single();
       setUsuario(perfil);
+      setCreditos(perfil?.creditos ?? 0);
+
+      // Suscripción en tiempo real a cambios de créditos
+      const channel = supabase
+        .channel("creditos-realtime")
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "profiles",
+            filter: `id=eq.${user.id}`,
+          },
+          (payload) => {
+            setCreditos(payload.new.creditos ?? 0);
+            setUsuario((prev: any) => ({ ...prev, ...payload.new }));
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
+
     cargar();
   }, []);
 
@@ -102,8 +128,12 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               <p className={`${textoNombre} text-xs font-medium truncate`}>{usuario?.nombre || "Docente"}</p>
               <p className={`${textoEmail} text-xs truncate`}>{usuario?.email || ""}</p>
             </div>
-            <span className="text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 bg-violet-500/20 text-violet-400">
-              {usuario?.creditos || 0} créditos
+            <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${
+              creditos <= 1 ? "bg-red-500/20 text-red-400" :
+              creditos <= 3 ? "bg-yellow-500/20 text-yellow-400" :
+              "bg-violet-500/20 text-violet-400"
+            }`}>
+              {creditos} créditos
             </span>
           </div>
           <button onClick={cerrarSesion}
@@ -117,6 +147,13 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       <div className={`md:hidden fixed top-0 left-0 right-0 z-30 ${mobileBg} border-b ${borderC} px-4 py-3 flex items-center justify-between transition-colors duration-200`}>
         <Logo />
         <div className="flex items-center gap-2">
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+            creditos <= 1 ? "bg-red-500/20 text-red-400" :
+            creditos <= 3 ? "bg-yellow-500/20 text-yellow-400" :
+            "bg-violet-500/20 text-violet-400"
+          }`}>
+            {creditos} créditos
+          </span>
           <button onClick={toggleDark} className={`p-1.5 rounded-lg border transition ${toggleBtn}`}>
             {dark ? <Sun size={15} /> : <Moon size={15} />}
           </button>
