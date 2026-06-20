@@ -1,26 +1,77 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ── YOUQUIZ TEMA ── */
+
+/* Variables por defecto (oscuro) */
+:root {
+  --q-bg: #0F0F1A;
+  --q-card: rgba(255,255,255,0.05);
+  --q-border: rgba(255,255,255,0.1);
+  --q-texto: #ffffff;
+  --q-subtexto: #94a3b8;
+  --q-input: rgba(255,255,255,0.05);
+  --q-input-text: #ffffff;
+  --q-placeholder: #64748b;
+  --q-select: #1a1a2e;
+}
+
+.dark-theme {
+  --q-bg: #0F0F1A;
+  --q-card: rgba(255,255,255,0.05);
+  --q-border: rgba(255,255,255,0.1);
+  --q-texto: #ffffff;
+  --q-subtexto: #94a3b8;
+  --q-input: rgba(255,255,255,0.05);
+  --q-input-text: #ffffff;
+  --q-placeholder: #64748b;
+  --q-select: #1a1a2e;
+}
+/* Variables modo claro */
+.light-theme {
+  --q-bg: #f8fafc;
+  --q-card: #ffffff;
+  --q-border: #e2e8f0;
+  --q-texto: #1e293b;
+  --q-subtexto: #64748b;
+  --q-input: #ffffff;
+  --q-input-text: #1e293b;
+  --q-placeholder: #94a3b8;
+  --q-select: #f1f5f9;
+}
+
+/* Clases youquiz */
+.youquiz-bg { background-color: var(--q-bg) !important; transition: background-color 0.2s; }
+.youquiz-card { background-color: var(--q-card) !important; border-color: var(--q-border) !important; transition: background-color 0.2s; }
+.youquiz-texto { color: var(--q-texto) !important; transition: color 0.2s; }
+.youquiz-subtexto { color: var(--q-subtexto) !important; transition: color 0.2s; }
+.youquiz-border { border-color: var(--q-border) !important; }
+.youquiz-input { background-color: var(--q-input) !important; color: var(--q-input-text) !important; border-color: var(--q-border) !important; }
+.youquiz-sidebar { background-color: var(--q-select) !important; }
+
+/* Modo claro — páginas con clases hardcodeadas */
+.light-theme [class*="bg-\[#0F0F1A\]"] { background-color: var(--q-bg) !important; }
+.light-theme [class*="bg-\[#0a0a14\]"] { background-color: #1e293b !important; }
+.light-theme [class*="bg-\[#1a1a2e\]"] { background-color: var(--q-select) !important; }
+.light-theme [class*="bg-white\/5"] { background-color: var(--q-card) !important; }
+.light-theme [class*="bg-white\/10"] { background-color: #f1f5f9 !important; }
+.light-theme [class*="border-white\/10"] { border-color: var(--q-border) !important; }
+.light-theme [class*="text-slate-400"] { color: var(--q-subtexto) !important; }
+.light-theme [class*="text-slate-500"] { color: #94a3b8 !important; }
+.light-theme [class*="text-slate-300"] { color: #475569 !important; }
+.light-theme input:not([type="file"]), .light-theme select, .light-theme textarea { background-color: var(--q-input) !important; color: var(--q-input-text) !important; border-color: var(--q-border) !important; }
+.light-theme input::placeholder, .light-theme textarea::placeholder { color: var(--q-placeholder) !important; }
+
+/* Ajustes contraste modo claro */
+.light-theme [class*="bg-green-600\/20"] { background-color: #dcfce7 !important; }
+.light-theme [class*="text-green-400"] { color: #16a34a !important; }
+.light-theme [class*="bg-violet-600\/20"], .light-theme [class*="bg-violet-600\/10"] { background-color: #ede9fe !important; }
+.light-theme [class*="text-violet-400"] { color: #7c3aed !important; }
+.light-theme [class*="text-cyan-400"] { color: #0891b2 !important; }
+.light-theme [class*="bg-cyan-600\/20"] { background-color: #cffafe !important; }
+.light-theme [class*="text-violet-300"] { color: #7c3aed !important; }
+.light-theme [class*="text-cyan-300"] { color: #0891b2 !important; }
+.light-theme [class*="text-yellow-300"] { color: #ca8a04 !important; }
