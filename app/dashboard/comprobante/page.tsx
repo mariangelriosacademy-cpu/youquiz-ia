@@ -5,16 +5,9 @@ import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 import { Upload, Loader2, CheckCircle, ArrowLeft } from "lucide-react";
 
-const PLANES = [
-  { id: "starter", label: "Starter — $2", creditos: 15, monto: "$2" },
-  { id: "plus", label: "Plus — $4", creditos: 35, monto: "$4" },
-  { id: "pro", label: "Pro — $6", creditos: 60, monto: "$6" },
-];
-
 export default function ComprobantePage() {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [plan, setPlan] = useState(PLANES[0]);
   const [archivo, setArchivo] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [subiendo, setSubiendo] = useState(false);
@@ -52,11 +45,13 @@ export default function ComprobantePage() {
 
     const { data: urlData } = supabase.storage.from("comprobantes").getPublicUrl(path);
 
+    const { data: perfil } = await supabase.from("profiles").select("nombre, email").eq("id", user.id).single();
+
     const { error: dbError } = await supabase.from("comprobantes").insert({
       user_id: user.id,
-      plan: plan.id,
-      creditos: plan.creditos,
-      monto: plan.monto,
+      plan: "pendiente",
+      creditos: 0,
+      monto: "por verificar",
       imagen_url: urlData.publicUrl,
       estado: "pendiente",
     });
@@ -74,7 +69,7 @@ export default function ComprobantePage() {
           <CheckCircle size={56} className="text-green-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">¡Comprobante enviado!</h2>
           <p className="text-slate-400 text-sm mb-6">
-            Revisaremos tu pago y agregaremos los créditos en menos de 24 horas. Te notificaremos por correo.
+            Revisaremos tu pago y agregaremos los créditos en menos de 24 horas.
           </p>
           <button onClick={() => router.push("/dashboard")}
             className="bg-violet-600 hover:bg-violet-500 text-white font-medium px-6 py-2.5 rounded-xl transition">
@@ -96,41 +91,21 @@ export default function ComprobantePage() {
 
         <h1 className="text-2xl font-bold text-white mb-2">📤 Subir comprobante</h1>
         <p className="text-slate-400 text-sm mb-6">
-          Paga por PayPal y sube tu comprobante aquí. Agregamos tus créditos en menos de 24 horas.
+          Sube la captura de tu pago y agregaremos tus créditos en menos de 24 horas.
         </p>
 
-        {/* Instrucciones */}
         <div className="bg-violet-600/10 border border-violet-500/20 rounded-2xl p-4 mb-6">
-          <h3 className="text-violet-400 font-semibold text-sm mb-3">📋 Pasos para pagar:</h3>
-          <ol className="space-y-2 text-slate-400 text-sm">
-            <li>1. Selecciona tu plan abajo</li>
-            <li>2. Paga por PayPal a <span className="text-violet-400 font-medium">paypal.me/Mari01ve</span></li>
-            <li>3. Toma una captura del comprobante</li>
-            <li>4. Súbela aquí y listo ✅</li>
-          </ol>
+          <h3 className="text-violet-400 font-semibold text-sm mb-2">📋 Recuerda:</h3>
+          <ul className="space-y-1 text-slate-400 text-sm">
+            <li>• $2 USD = 15 créditos</li>
+            <li>• $4 USD = 35 créditos</li>
+            <li>• $6 USD = 60 créditos</li>
+          </ul>
         </div>
 
-        {/* Seleccionar plan */}
-        <div className="space-y-2 mb-6">
-          <label className="block text-sm font-medium text-slate-300">Selecciona tu plan</label>
-          {PLANES.map((p) => (
-            <button key={p.id} onClick={() => setPlan(p)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition ${
-                plan.id === p.id
-                  ? "bg-violet-600/20 border-violet-500 text-white"
-                  : "bg-white/5 border-white/10 text-slate-400 hover:border-violet-500/50"
-              }`}>
-              <span className="font-medium">{p.label}</span>
-              <span className="text-xs text-violet-400">{p.creditos} créditos</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Subir imagen */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-slate-300 mb-2">Comprobante de pago</label>
-          <div
-            onClick={() => fileRef.current?.click()}
+          <div onClick={() => fileRef.current?.click()}
             className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition ${
               preview ? "border-violet-500/50" : "border-white/10 hover:border-violet-500/50"
             }`}>
@@ -140,11 +115,11 @@ export default function ComprobantePage() {
               <>
                 <Upload size={32} className="text-slate-500 mx-auto mb-2" />
                 <p className="text-slate-400 text-sm">Haz clic para subir la imagen</p>
-                <p className="text-slate-600 text-xs mt-1">PNG, JPG o PDF — máximo 5MB</p>
+                <p className="text-slate-600 text-xs mt-1">PNG o JPG — máximo 5MB</p>
               </>
             )}
           </div>
-          <input ref={fileRef} type="file" accept="image/*,.pdf" className="hidden" onChange={seleccionarArchivo} />
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={seleccionarArchivo} />
           {preview && (
             <button onClick={() => { setArchivo(null); setPreview(null); }}
               className="text-xs text-slate-500 hover:text-red-400 mt-2 transition">
