@@ -116,7 +116,7 @@ export default function ExamenPage() {
   );
 
   return (
-    <main className="min-h-screen youquiz-bg px-4 py-8">
+    <main className="min-h-screen youquiz-bg px-4 pt-32 pb-8 md:pt-8">
       <div className="max-w-3xl mx-auto">
 
         <button onClick={() => router.push("/dashboard/mis-examenes")}

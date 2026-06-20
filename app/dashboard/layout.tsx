@@ -39,7 +39,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       setCreditos(perfil?.creditos ?? 0);
 
       const channel = supabase
-        .channel("creditos-realtime")
+        .channel(`creditos-${user.id}`)
         .on("postgres_changes", {
           event: "UPDATE", schema: "public", table: "profiles",
           filter: `id=eq.${user.id}`,
@@ -131,7 +131,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* NAVBAR MOBILE */}
-      <div className={`md:hidden fixed top-0 left-0 right-0 z-30 ${mobileBg} border-b ${borderC} px-3 py-2 flex items-center justify-between transition-colors duration-200`}>
+      <div className={`md:hidden fixed top-0 left-0 right-0 z-30 ${mobileBg} border-b ${borderC} px-3 py-3 flex items-center justify-between transition-colors duration-200`}>
         {/* Logo pequeño en mobile */}
         <img src="/logo.png" alt="YouQuiz IA" style={{width: "120px", height: "auto"}} />
         
@@ -200,7 +200,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      <main className="flex-1 md:ml-64 pt-14 md:pt-0">
+      <main className="flex-1 md:ml-64 pt-16 md:pt-0">
         {children}
       </main>
     </div>

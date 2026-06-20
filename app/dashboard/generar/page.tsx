@@ -328,10 +328,10 @@ function GenerarPage() {
     <>
       <style>{`@media print { .no-print { display: none !important; } body { background: white !important; color: black !important; } }`}</style>
       <div className="min-h-screen bg-[#0F0F1A]">
-        <div className="max-w-6xl mx-auto px-4 py-6 md:py-8">
+        <div className="max-w-6xl mx-auto px-4 pt-32 pb-6 md:py-8">
 
           {/* PANEL MOBILE — tipo examen colapsable */}
-          <div className="no-print md:hidden mb-4">
+          <div className="no-print md:hidden mb-4 mt-2">
             <button onClick={() => setMostrarOpciones(!mostrarOpciones)}
               className="w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white transition">
               <span className="flex items-center gap-2">

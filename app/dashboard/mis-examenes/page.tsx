@@ -51,7 +51,7 @@ export default function MisExamenesPage() {
   );
 
   return (
-    <main className="min-h-screen youquiz-bg px-4 py-10">
+    <main className="min-h-screen youquiz-bg px-4 pt-20 pb-10 md:pt-10">
       <div className="max-w-4xl mx-auto">
 
         <div className="flex items-center justify-between mb-6">
@@ -62,8 +62,8 @@ export default function MisExamenesPage() {
             </p>
           </div>
           <button onClick={() => router.push("/dashboard/generar")}
-            className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition">
-            <Plus size={16} /> Nuevo examen
+            className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium px-3 py-2 rounded-xl transition">
+            <Plus size={16} /> <span className="hidden sm:inline">Nuevo examen</span><span className="sm:hidden">Nuevo</span>
           </button>
         </div>
 
@@ -92,39 +92,37 @@ export default function MisExamenesPage() {
         ) : (
           <div className="space-y-3">
             {filtrados.map((examen) => (
-              <div key={examen.id} className="youquiz-card border rounded-2xl p-5 transition group hover:border-violet-500/30">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="youquiz-texto font-medium text-sm truncate group-hover:text-violet-400 transition">
-                      {examen.titulo}
-                    </h3>
-                    <p className="youquiz-subtexto text-xs mt-1 truncate">Tema: {examen.tema}</p>
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className="youquiz-subtexto text-xs">{examen.preguntas?.length} preguntas</span>
-                      <span className="youquiz-subtexto text-xs">·</span>
-                      <span className="youquiz-subtexto text-xs">
-                        {new Date(examen.created_at).toLocaleDateString("es-ES", {
-                          day: "numeric", month: "short", year: "numeric"
-                        })}
-                      </span>
-                    </div>
+              <div key={examen.id} className="youquiz-card border rounded-2xl p-4 transition group hover:border-violet-500/30">
+                <div>
+                  <h3 className="youquiz-texto font-medium text-sm group-hover:text-violet-400 transition">
+                    {examen.titulo}
+                  </h3>
+                  <p className="youquiz-subtexto text-xs mt-1">Tema: {examen.tema}</p>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="youquiz-subtexto text-xs">{examen.preguntas?.length} preguntas</span>
+                    <span className="youquiz-subtexto text-xs">·</span>
+                    <span className="youquiz-subtexto text-xs">
+                      {new Date(examen.created_at).toLocaleDateString("es-ES", {
+                        day: "numeric", month: "short", year: "numeric"
+                      })}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+                  <div className="flex items-center gap-1.5 mt-3 flex-wrap">
                     <button onClick={() => copiarLink(examen.id)}
-                      className="youquiz-card flex items-center gap-1.5 px-3 py-1.5 border youquiz-subtexto hover:text-violet-400 rounded-lg text-xs transition">
-                      {copiado === examen.id ? <><CheckCheck size={12} /> Copiado</> : <><Copy size={12} /> Copiar link</>}
+                      className="flex items-center gap-1 px-2 py-1 bg-white/5 border border-white/10 text-slate-400 rounded-lg text-xs transition">
+                      {copiado === examen.id ? <><CheckCheck size={11} /> Copiado</> : <><Copy size={11} /> Link</>}
                     </button>
                     <button onClick={() => router.push(`/dashboard/examen/${examen.id}/resultados`)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600/20 hover:bg-violet-600/30 border border-violet-500/30 text-violet-400 rounded-lg text-xs transition">
-                      <BarChart2 size={12} /> Resultados
+                      className="flex items-center gap-1 px-2 py-1 bg-violet-600/20 border border-violet-500/30 text-violet-400 rounded-lg text-xs transition">
+                      <BarChart2 size={11} /> Stats
                     </button>
                     <button onClick={() => router.push(`/dashboard/examen/${examen.id}`)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-xs transition">
-                      <Eye size={12} /> Ver
+                      className="flex items-center gap-1 px-2 py-1 bg-violet-600 text-white rounded-lg text-xs transition">
+                      <Eye size={11} /> Ver
                     </button>
                     <button onClick={() => eliminarExamen(examen.id)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 rounded-lg text-xs transition">
-                      <Trash2 size={12} />
+                      className="flex items-center gap-1 px-2 py-1 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-xs transition">
+                      <Trash2 size={11} />
                     </button>
                   </div>
                 </div>
