@@ -76,7 +76,7 @@ export default function PerfilPage() {
   );
 
   return (
-    <div className="min-h-screen youquiz-bg px-4 py-4 pt-6 md:py-8">
+    <div className="min-h-screen youquiz-bg px-4 md:py-8" style={{paddingTop: "72px"}}>
       <div className="max-w-xl mx-auto">
 
         <h1 className="text-2xl font-bold youquiz-texto mb-6">👤 Mi perfil</h1>

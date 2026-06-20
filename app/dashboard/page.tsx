@@ -30,7 +30,7 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="min-h-screen youquiz-bg px-4 py-4 pt-6 md:py-8">
+    <div className="min-h-screen youquiz-bg px-4 md:py-8" style={{paddingTop: "72px"}}>
       <div className="max-w-4xl mx-auto">
 
         <div className="mb-8">
