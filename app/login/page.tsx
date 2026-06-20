@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, Suspense } from "react";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { login } from "../auth/actions";
 
-export default function LoginPage() {
+function LoginContent() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/dashboard";
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +34,8 @@ export default function LoginPage() {
       <div className="relative w-full max-w-md">
         <div className="text-center mb-8">
           <span className="inline-flex items-center gap-2 text-2xl font-bold text-white">
-            <span className="text-yellow-400 font-black tracking-tight">You</span><span className="text-violet-400 font-black tracking-tight">Quiz</span>
+            <span className="text-yellow-400 font-black tracking-tight">You</span>
+            <span className="text-violet-400 font-black tracking-tight">Quiz</span>
             <span className="bg-violet-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">IA</span>
           </span>
           <p className="mt-2 text-slate-400 text-sm">Bienvenido de vuelta</p>
@@ -104,5 +105,17 @@ export default function LoginPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0F0F1A] flex items-center justify-center">
+        <div className="text-violet-400 animate-pulse">Cargando...</div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }
