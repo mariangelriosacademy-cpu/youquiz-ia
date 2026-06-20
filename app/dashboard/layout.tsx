@@ -17,10 +17,6 @@ const NAV = [
   { href: "/dashboard/perfil", icon: <User size={18} />, label: "Mi perfil" },
 ];
 
-const Logo = () => (
-  <img src="/logo.png" alt="YouQuiz IA" className="h-auto w-auto" style={{width: "250px"}} />
-);
-
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -42,27 +38,18 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       setUsuario(perfil);
       setCreditos(perfil?.creditos ?? 0);
 
-      // Suscripción en tiempo real a cambios de créditos
       const channel = supabase
         .channel("creditos-realtime")
-        .on(
-          "postgres_changes",
-          {
-            event: "UPDATE",
-            schema: "public",
-            table: "profiles",
-            filter: `id=eq.${user.id}`,
-          },
-          (payload) => {
-            setCreditos(payload.new.creditos ?? 0);
-            setUsuario((prev: any) => ({ ...prev, ...payload.new }));
-          }
-        )
+        .on("postgres_changes", {
+          event: "UPDATE", schema: "public", table: "profiles",
+          filter: `id=eq.${user.id}`,
+        }, (payload) => {
+          setCreditos(payload.new.creditos ?? 0);
+          setUsuario((prev: any) => ({ ...prev, ...payload.new }));
+        })
         .subscribe();
 
-      return () => {
-        supabase.removeChannel(channel);
-      };
+      return () => { supabase.removeChannel(channel); };
     }
 
     cargar();
@@ -91,13 +78,19 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     ? "border-white/10 text-slate-400 hover:text-white hover:bg-white/5"
     : "border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-100";
 
+  const creditosBadge = `text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${
+    creditos <= 1 ? "bg-red-500/20 text-red-400" :
+    creditos <= 3 ? "bg-yellow-500/20 text-yellow-400" :
+    "bg-violet-500/20 text-violet-400"
+  }`;
+
   return (
     <div className={`min-h-screen ${bg} flex transition-colors duration-200`}>
 
       {/* SIDEBAR DESKTOP */}
       <aside className={`hidden md:flex w-64 flex-col border-r ${sidebarBg} fixed h-full z-20 transition-colors duration-200`}>
-        <div className={`p-5 border-b ${borderC} flex items-center justify-between`}>
-          <Logo />
+        <div className={`p-4 border-b ${borderC} flex items-center justify-between`}>
+          <img src="/logo.png" alt="YouQuiz IA" style={{width: "160px", height: "auto"}} />
           <button onClick={toggleDark} className={`p-1.5 rounded-lg border transition ${toggleBtn}`}>
             {dark ? <Sun size={15} /> : <Moon size={15} />}
           </button>
@@ -128,13 +121,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               <p className={`${textoNombre} text-xs font-medium truncate`}>{usuario?.nombre || "Docente"}</p>
               <p className={`${textoEmail} text-xs truncate`}>{usuario?.email || ""}</p>
             </div>
-            <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${
-              creditos <= 1 ? "bg-red-500/20 text-red-400" :
-              creditos <= 3 ? "bg-yellow-500/20 text-yellow-400" :
-              "bg-violet-500/20 text-violet-400"
-            }`}>
-              {creditos} créditos
-            </span>
+            <span className={creditosBadge}>{creditos} créditos</span>
           </div>
           <button onClick={cerrarSesion}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition">
@@ -144,63 +131,76 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* NAVBAR MOBILE */}
-      <div className={`md:hidden fixed top-0 left-0 right-0 z-30 ${mobileBg} border-b ${borderC} px-4 py-3 flex items-center justify-between transition-colors duration-200`}>
-        <Logo />
-        <div className="flex items-center gap-2">
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-            creditos <= 1 ? "bg-red-500/20 text-red-400" :
-            creditos <= 3 ? "bg-yellow-500/20 text-yellow-400" :
-            "bg-violet-500/20 text-violet-400"
-          }`}>
-            {creditos} créditos
-          </span>
+      <div className={`md:hidden fixed top-0 left-0 right-0 z-30 ${mobileBg} border-b ${borderC} px-3 py-2 flex items-center justify-between transition-colors duration-200`}>
+        {/* Logo pequeño en mobile */}
+        <img src="/logo.png" alt="YouQuiz IA" style={{width: "120px", height: "auto"}} />
+        
+        <div className="flex items-center gap-1.5">
+          <span className={creditosBadge}>{creditos} cr.</span>
           <button onClick={toggleDark} className={`p-1.5 rounded-lg border transition ${toggleBtn}`}>
-            {dark ? <Sun size={15} /> : <Moon size={15} />}
+            {dark ? <Sun size={14} /> : <Moon size={14} />}
           </button>
           <button onClick={() => setAbierto(!abierto)}
-            className={`${dark ? "text-slate-400 hover:text-white" : "text-slate-600 hover:text-slate-900"} transition`}>
-            {abierto ? <X size={22} /> : <Menu size={22} />}
+            className={`p-1.5 ${dark ? "text-slate-400 hover:text-white" : "text-slate-600 hover:text-slate-900"} transition`}>
+            {abierto ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
 
       {/* MENU MOBILE */}
       {abierto && (
-        <div className={`md:hidden fixed inset-0 z-20 ${mobileBg} pt-16 px-4 transition-colors duration-200`}>
-          <nav className="space-y-1 mb-4">
+        <div className={`md:hidden fixed inset-0 z-20 ${mobileBg} pt-14 px-4 overflow-y-auto transition-colors duration-200`}>
+          
+          {/* Nav links */}
+          <nav className="space-y-1 py-4">
             {NAV.map((item) => {
               const activo = pathname === item.href;
               return (
                 <Link key={item.href} href={item.href}
                   onClick={() => setAbierto(false)}
-                  className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition ${activo ? navActivo : navInactivo}`}>
+                  className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition ${activo ? navActivo : navInactivo}`}>
                   {item.icon}
                   {item.label}
+                  {activo && <ChevronRight size={14} className="ml-auto" />}
                 </Link>
               );
             })}
           </nav>
-          <div className={`border-t ${borderC} pt-4`}>
-            <div className="flex items-center gap-3 mb-3 px-3">
-              <div className="w-9 h-9 rounded-full bg-violet-600 flex items-center justify-center text-white font-bold overflow-hidden">
+
+          {/* Créditos */}
+          <div className={`rounded-xl p-4 mb-4 ${dark ? "bg-violet-600/10 border border-violet-500/20" : "bg-violet-50 border border-violet-200"}`}>
+            <p className="text-violet-400 text-xs mb-1">Tus créditos disponibles</p>
+            <p className="text-violet-400 text-2xl font-bold">{creditos}</p>
+            {creditos <= 3 && (
+              <Link href="/precios" onClick={() => setAbierto(false)}
+                className="text-yellow-400 text-xs mt-1 block">
+                ⚡ Comprar más créditos
+              </Link>
+            )}
+          </div>
+
+          {/* Usuario */}
+          <div className={`border-t ${borderC} pt-4 pb-8`}>
+            <div className="flex items-center gap-3 mb-4 px-1">
+              <div className="w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center text-white font-bold overflow-hidden flex-shrink-0">
                 {usuario?.avatar_url
                   ? <img src={usuario.avatar_url} alt="avatar" className="w-full h-full object-cover" />
                   : usuario?.nombre?.charAt(0)?.toUpperCase() || "U"}
               </div>
-              <div>
-                <p className={`${textoNombre} text-sm font-medium`}>{usuario?.nombre || "Docente"}</p>
-                <p className={`${textoEmail} text-xs`}>{usuario?.email || ""}</p>
+              <div className="min-w-0">
+                <p className={`${textoNombre} text-sm font-medium truncate`}>{usuario?.nombre || "Docente"}</p>
+                <p className={`${textoEmail} text-xs truncate`}>{usuario?.email || ""}</p>
               </div>
             </div>
             <button onClick={cerrarSesion}
-              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-500/10 transition">
+              className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-sm text-red-400 hover:bg-red-500/10 transition">
               <LogOut size={16} /> Cerrar sesión
             </button>
           </div>
         </div>
       )}
 
-      <main className="flex-1 md:ml-64 pt-16 md:pt-0">
+      <main className="flex-1 md:ml-64 pt-14 md:pt-0">
         {children}
       </main>
     </div>
