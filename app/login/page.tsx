@@ -2,7 +2,7 @@
 
 import { useState, useTransition, Suspense } from "react";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, CheckCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { login } from "../auth/actions";
 
@@ -10,6 +10,7 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/dashboard";
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
 
@@ -20,12 +21,28 @@ function LoginContent() {
     formData.set("next", next);
     startTransition(async () => {
       const result = await login(formData);
-      if (result?.error) setError(result.error);
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        setSuccess(true);
+        setTimeout(() => {
+          window.location.href = next;
+        }, 1500);
+      }
     });
   }
 
   return (
     <main className="min-h-screen bg-[#0F0F1A] flex items-center justify-center px-4">
+
+      {/* Toast bienvenida */}
+      {success && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-green-500 text-white px-6 py-3 rounded-2xl shadow-lg animate-bounce">
+          <CheckCircle size={20} />
+          <span className="font-semibold text-sm">¡Bienvenido de vuelta! 👋</span>
+        </div>
+      )}
+
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-violet-600/20 rounded-full blur-3xl" />
         <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl" />
@@ -89,10 +106,10 @@ function LoginContent() {
             </div>
 
             <button
-              type="submit" disabled={isPending}
+              type="submit" disabled={isPending || success}
               className="w-full bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg py-2.5 text-sm transition-colors mt-2"
             >
-              {isPending ? "Ingresando..." : "Ingresar"}
+              {isPending ? "Ingresando..." : success ? "¡Bienvenido! 👋" : "Ingresar"}
             </button>
           </form>
         </div>
