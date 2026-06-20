@@ -76,10 +76,10 @@ export default function PerfilPage() {
   );
 
   return (
-    <div className="min-h-screen youquiz-bg px-4 md:py-8" style={{paddingTop: "72px"}}>
+    <div className="min-h-screen youquiz-bg px-4 md:py-8" style={{paddingTop: "80px"}}>
       <div className="max-w-xl mx-auto">
 
-        <h1 className="text-2xl font-bold youquiz-texto mb-6">👤 Mi perfil</h1>
+<h1 className="text-2xl font-bold youquiz-texto mb-6">👤 Mi perfil</h1>
 
         <div className="flex items-center gap-5 mb-8">
           <div className="relative">

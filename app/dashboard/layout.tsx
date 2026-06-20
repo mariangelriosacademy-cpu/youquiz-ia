@@ -17,6 +17,13 @@ const NAV = [
   { href: "/dashboard/perfil", icon: <User size={18} />, label: "Mi perfil" },
 ];
 
+const NAV_MOBILE_BOTTOM = [
+  { href: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Inicio" },
+  { href: "/dashboard/generar", icon: <Sparkles size={20} />, label: "Generar" },
+  { href: "/dashboard/mis-examenes", icon: <ClipboardList size={20} />, label: "Exámenes" },
+  { href: "/dashboard/perfil", icon: <User size={20} />, label: "Perfil" },
+];
+
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -130,11 +137,9 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* NAVBAR MOBILE */}
+      {/* NAVBAR MOBILE TOP */}
       <div className={`md:hidden fixed top-0 left-0 right-0 z-30 ${mobileBg} border-b ${borderC} px-3 py-3 flex items-center justify-between transition-colors duration-200`}>
-        {/* Logo pequeño en mobile */}
         <img src="/logo.png" alt="YouQuiz IA" style={{width: "120px", height: "auto"}} />
-        
         <div className="flex items-center gap-1.5">
           <span className={creditosBadge}>{creditos} cr.</span>
           <button onClick={toggleDark} className={`p-1.5 rounded-lg border transition ${toggleBtn}`}>
@@ -147,11 +152,9 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      {/* MENU MOBILE */}
+      {/* MENU MOBILE OVERLAY */}
       {abierto && (
         <div className={`md:hidden fixed inset-0 z-20 ${mobileBg} pt-14 px-4 overflow-y-auto transition-colors duration-200`}>
-          
-          {/* Nav links */}
           <nav className="space-y-1 py-4">
             {NAV.map((item) => {
               const activo = pathname === item.href;
@@ -167,7 +170,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          {/* Créditos */}
           <div className={`rounded-xl p-4 mb-4 ${dark ? "bg-violet-600/10 border border-violet-500/20" : "bg-violet-50 border border-violet-200"}`}>
             <p className="text-violet-400 text-xs mb-1">Tus créditos disponibles</p>
             <p className="text-violet-400 text-2xl font-bold">{creditos}</p>
@@ -179,8 +181,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             )}
           </div>
 
-          {/* Usuario */}
-          <div className={`border-t ${borderC} pt-4 pb-8`}>
+          <div className={`border-t ${borderC} pt-4 pb-24`}>
             <div className="flex items-center gap-3 mb-4 px-1">
               <div className="w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center text-white font-bold overflow-hidden flex-shrink-0">
                 {usuario?.avatar_url
@@ -200,9 +201,26 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      <main className="flex-1 md:ml-64 pt-16 md:pt-0">
+      <main className="flex-1 md:ml-64 pt-16 md:pt-0 pb-20 md:pb-0">
         {children}
       </main>
+
+      {/* NAV INFERIOR MOBILE */}
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-30 ${mobileBg} border-t ${borderC} flex items-center justify-around px-2 py-2 transition-colors duration-200`}>
+        {NAV_MOBILE_BOTTOM.map((item) => {
+          const activo = pathname === item.href;
+          return (
+            <Link key={item.href} href={item.href}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition ${
+                activo ? "text-violet-400" : dark ? "text-slate-500 hover:text-slate-300" : "text-slate-400 hover:text-slate-600"
+              }`}>
+              {item.icon}
+              <span className="text-[10px] font-medium">{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
     </div>
   );
 }

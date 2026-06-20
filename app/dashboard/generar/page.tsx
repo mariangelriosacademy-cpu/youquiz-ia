@@ -423,7 +423,8 @@ function GenerarPage() {
             {/* CONTENIDO */}
             <div className="flex-1 min-w-0">
               <div className="no-print mb-4">
-                <h1 className="text-lg md:text-xl font-bold text-white">✨ Generar examen con IA</h1>
+                
+<h1 className="text-lg md:text-xl font-bold text-white">✨ Generar examen con IA</h1>
                 <p className="text-slate-400 text-xs mt-1">
                   {tipoSeleccionado
                     ? `Modo: ${tipoSeleccionado} · ${cantidad} preguntas`

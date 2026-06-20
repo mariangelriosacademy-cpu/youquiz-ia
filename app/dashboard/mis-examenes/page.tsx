@@ -56,7 +56,8 @@ export default function MisExamenesPage() {
 
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold youquiz-texto">📋 Mis exámenes</h1>
+          
+<h1 className="text-2xl font-bold youquiz-texto">📋 Mis exámenes</h1>
             <p className="youquiz-subtexto text-sm mt-1">
               {examenes.length} examen{examenes.length !== 1 ? "es" : ""} creado{examenes.length !== 1 ? "s" : ""}
             </p>
