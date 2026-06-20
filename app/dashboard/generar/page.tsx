@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 import {
@@ -104,7 +104,7 @@ const GRADOS = [
   { grupo: "Universidad", opciones: ["1er semestre", "2do semestre", "3er semestre", "4to semestre", "5to semestre", "6to semestre", "7mo semestre", "8vo semestre"] },
 ];
 
-export default function GenerarPage() {
+function GenerarPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -788,5 +788,16 @@ export default function GenerarPage() {
         </div>
       </div>
     </>
+  );
+}
+export default function GenerarPageWrapper() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0F0F1A] flex items-center justify-center">
+        <div className="text-violet-400 animate-pulse">Cargando...</div>
+      </div>
+    }>
+      <GenerarPage />
+    </Suspense>
   );
 }
