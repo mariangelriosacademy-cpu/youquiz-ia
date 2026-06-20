@@ -42,7 +42,9 @@ export async function register(formData: FormData) {
     });
   }
 
-  if (data.session === null) redirect("/confirmar-email");
+  if (data.session === null) {
+    return { confirmar: true };
+  }
 
   revalidatePath("/", "layout");
   return { success: true };

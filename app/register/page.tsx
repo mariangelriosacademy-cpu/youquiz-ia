@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { register } from "../auth/actions";
 
-// Componente de confeti
 function Confeti() {
   const colores = ["#7c3aed", "#facc15", "#06b6d4", "#10b981", "#f43f5e", "#f97316"];
   const piezas = Array.from({ length: 80 }, (_, i) => ({
@@ -21,20 +20,17 @@ function Confeti() {
   return (
     <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
       {piezas.map((p) => (
-        <div
-          key={p.id}
-          style={{
-            position: "absolute",
-            left: p.left,
-            top: "-10px",
-            width: p.size,
-            height: p.size,
-            backgroundColor: p.color,
-            borderRadius: Math.random() > 0.5 ? "50%" : "2px",
-            transform: `rotate(${p.rotate})`,
-            animation: `caer ${p.duration} ${p.delay} ease-in forwards`,
-          }}
-        />
+        <div key={p.id} style={{
+          position: "absolute",
+          left: p.left,
+          top: "-10px",
+          width: p.size,
+          height: p.size,
+          backgroundColor: p.color,
+          borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+          transform: `rotate(${p.rotate})`,
+          animation: `caer ${p.duration} ${p.delay} ease-in forwards`,
+        }} />
       ))}
       <style>{`
         @keyframes caer {
@@ -74,6 +70,8 @@ export default function RegisterPage() {
       const result = await register(formData);
       if (result?.error) {
         setError(result.error);
+      } else if (result?.confirmar) {
+        window.location.href = "/confirmar-email";
       } else {
         setSuccess(true);
       }
@@ -82,7 +80,6 @@ export default function RegisterPage() {
 
   return (
     <main className="min-h-screen bg-[#0F0F1A] flex items-center justify-center px-4">
-
       {success && <Confeti />}
 
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -101,7 +98,6 @@ export default function RegisterPage() {
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
-
           {success ? (
             <div className="text-center py-6">
               <div className="text-6xl mb-4">🎉</div>
@@ -117,7 +113,6 @@ export default function RegisterPage() {
           ) : (
             <>
               <h1 className="text-xl font-semibold text-white mb-6">Crear cuenta</h1>
-
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
                   <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-lg px-4 py-3">
