@@ -6,7 +6,7 @@ import Link from "next/link";
 import { createBrowserClient } from "@supabase/ssr";
 import {
   LayoutDashboard, Sparkles, ClipboardList, User, LogOut,
-  Menu, X, ChevronRight, Sun, Moon
+  Menu, X, ChevronRight, Sun, Moon, CreditCard
 } from "lucide-react";
 import { ThemeProvider, useTheme } from "./theme-context";
 
@@ -14,6 +14,7 @@ const NAV = [
   { href: "/dashboard", icon: <LayoutDashboard size={18} />, label: "Panel principal" },
   { href: "/dashboard/generar", icon: <Sparkles size={18} />, label: "Generar examen" },
   { href: "/dashboard/mis-examenes", icon: <ClipboardList size={18} />, label: "Mis exámenes" },
+  { href: "/dashboard/mis-pagos", icon: <CreditCard size={18} />, label: "Mis pagos" },
   { href: "/dashboard/perfil", icon: <User size={18} />, label: "Mi perfil" },
 ];
 
