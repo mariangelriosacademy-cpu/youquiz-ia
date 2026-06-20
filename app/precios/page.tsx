@@ -128,11 +128,17 @@ export default function PreciosPage() {
                 ))}
               </ul>
 
-              <a href={plan.paypalLink} target="_blank" rel="noopener noreferrer"
-                className={`w-full py-3 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2 ${plan.btnColor}`}>
-                <Zap size={14} />
-                Comprar {plan.creditos} créditos
-              </a>
+              <div className="space-y-2">
+  <a href={plan.paypalLink} target="_blank" rel="noopener noreferrer"
+    className={`w-full py-3 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2 ${plan.btnColor}`}>
+    <Zap size={14} />
+    Pagar por PayPal
+  </a>
+  <button onClick={() => router.push(`/dashboard/comprobante?plan=${plan.id}`)}
+    className="w-full py-2.5 rounded-xl text-xs font-medium border border-white/10 text-slate-400 hover:text-white hover:border-violet-500/50 transition">
+    📤 Ya pagué — subir comprobante
+  </button>
+</div>
             </div>
           ))}
         </div>
@@ -140,12 +146,13 @@ export default function PreciosPage() {
         {/* Instrucciones post-pago */}
         {/* Instrucciones post-pago */}
 <div className="bg-violet-600/10 border border-violet-500/20 rounded-2xl p-5 mb-6 text-center">
-  <p className="text-violet-400 font-semibold text-sm mb-1">📩 Activación de créditos</p>
-  <p className="text-slate-400 text-xs">
-    Una vez completado el pago, envía tu comprobante a{" "}
-    <span className="text-white font-medium">riosfuenmayor2019@gmail.com</span>{" "}
-    indicando tu correo registrado en YouQuiz IA. Los créditos serán activados en un plazo máximo de 24 horas hábiles.
-  </p>
+  <p className="text-violet-400 font-semibold text-sm mb-2">📩 ¿Cómo funciona?</p>
+  <ol className="text-slate-400 text-xs space-y-1">
+    <li>1. Elige tu plan y paga por PayPal</li>
+    <li>2. Haz clic en "Ya pagué — subir comprobante"</li>
+    <li>3. Sube la captura de tu pago</li>
+    <li>4. Activamos tus créditos en menos de 24 horas ✅</li>
+  </ol>
 </div>
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8">
