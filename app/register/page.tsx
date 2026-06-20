@@ -69,7 +69,7 @@ export default function RegisterPage() {
     startTransition(async () => {
       const result = await register(formData);
       if (result?.error) {
-        setError(result.error);
+        setError(result.error || "Error desconocido. Intenta de nuevo.");
       } else if (result?.confirmar) {
         window.location.href = "/confirmar-email";
       } else {

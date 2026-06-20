@@ -29,10 +29,16 @@ export async function register(formData: FormData) {
   if (error) {
     if (error.message.includes("already registered"))
       return { error: "Este correo ya tiene una cuenta. Inicia sesión." };
-    return { error: `Error: ${error.message}` };
+    if (error.message.includes("rate limit"))
+      return { error: "Demasiados intentos. Espera un momento." };
+    return { error: error.message || "Error al crear la cuenta. Intenta de nuevo." };
   }
 
-  if (data.user) {
+  if (!data.user) {
+    return { error: "No se pudo crear la cuenta. Intenta de nuevo." };
+  }
+
+  try {
     await supabase.from("profiles").insert({
       id: data.user.id,
       email,
@@ -40,6 +46,8 @@ export async function register(formData: FormData) {
       plan: "free",
       examenes_mes: 0,
     });
+  } catch (e) {
+    console.error("Error creando perfil:", e);
   }
 
   if (data.session === null) {
