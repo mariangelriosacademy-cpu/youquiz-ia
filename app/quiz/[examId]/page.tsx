@@ -113,9 +113,14 @@ export default function QuizPage() {
   }
 
   function comenzar() {
-    if (!nombre.trim() || !seccionEst.trim()) return;
-    setPantalla("preguntas");
+  if (!nombre.trim() || !seccionEst.trim()) return;
+  const key = `quiz_completado_${examId}`;
+  if (localStorage.getItem(key)) {
+    alert("Ya presentaste este examen. Solo se permite un intento por dispositivo.");
+    return;
   }
+  setPantalla("preguntas");
+}
 
   async function guardarResultados(todasRespuestas: string[], puntajeFinal: number) {
     setGuardando(true);
@@ -141,6 +146,7 @@ export default function QuizPage() {
         }))
       );
     }
+    localStorage.setItem(`quiz_completado_${examId}`, "true");
     setPuntaje(puntajeFinal);
     setGuardando(false);
     setPantalla("resultado");
