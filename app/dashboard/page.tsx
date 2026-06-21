@@ -19,25 +19,25 @@ export default function DashboardPage() {
       emoji: "💰",
       titulo: "¡Gana el 50% por cada referido!",
       texto: "Comparte tu link con otros docentes y gana comisión por cada compra Plus o Pro.",
-      color: "from-yellow-600/20 to-amber-600/20 border-yellow-500/30",
-      badge: "bg-yellow-500/20 text-yellow-400",
-      badgeTexto: "Programa de afiliados",
+      badge: "Programa de afiliados",
+      imagen: "/banner-hotmart.jpg",
+      overlay: "from-yellow-900/80 to-amber-900/70",
     },
     {
       emoji: "👩‍🏫",
       titulo: "¿Conoces a otro docente?",
       texto: "Recomienda YouQuiz IA y recibe el 50% de cada venta. Sin límite de referidos.",
-      color: "from-violet-600/20 to-pink-600/20 border-violet-500/30",
-      badge: "bg-violet-500/20 text-violet-400",
-      badgeTexto: "Gana dinero extra",
+      badge: "Gana dinero extra",
+      imagen: "/banner-docente1.jpg",
+      overlay: "from-violet-900/80 to-indigo-900/70",
     },
     {
       emoji: "🚀",
       titulo: "Tu link, tus ganancias",
       texto: "Cada docente que compre Plus ($4) o Pro ($6) te da $2 o $3 directo a tu PayPal.",
-      color: "from-cyan-600/20 to-blue-600/20 border-cyan-500/30",
-      badge: "bg-cyan-500/20 text-cyan-400",
-      badgeTexto: "50% de comisión",
+      badge: "50% de comisión",
+      imagen: "/banner-docente2.jpg",
+      overlay: "from-cyan-900/80 to-blue-900/70",
     },
   ];
 
@@ -58,7 +58,7 @@ export default function DashboardPage() {
     cargar();
   }, []);
 
-  // Rotación automática del banner cada 4 segundos
+  // Rotación automática cada 4 segundos
   useEffect(() => {
     const interval = setInterval(() => {
       setBannerIdx(prev => (prev + 1) % BANNERS.length);
@@ -121,40 +121,51 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* BANNER ROTATIVO DE AFILIADOS */}
-        <div className={`relative bg-gradient-to-r ${banner.color} border rounded-2xl p-5 mb-4 transition-all duration-500`}>
-          <div className="flex items-start gap-4">
-            <div className="text-3xl flex-shrink-0">{banner.emoji}</div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${banner.badge}`}>
-                  {banner.badgeTexto}
-                </span>
-              </div>
-              <h3 className="youquiz-texto font-bold text-base">{banner.titulo}</h3>
-              <p className="youquiz-subtexto text-sm mt-0.5">{banner.texto}</p>
+        {/* BANNER ROTATIVO DE AFILIADOS CON IMAGEN DE FONDO */}
+        <div className="relative mb-4 rounded-2xl overflow-hidden h-44"
+          style={{
+            backgroundImage: `url(${banner.imagen})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}>
 
-              {/* Link de afiliado */}
-              {linkAfiliado && (
-                <div className="mt-3 flex items-center gap-2">
-                  <div className="flex-1 bg-black/20 rounded-lg px-3 py-1.5 text-xs text-slate-400 truncate font-mono">
-                    {linkAfiliado}
-                  </div>
-                  <button onClick={copiarLink}
-                    className="flex-shrink-0 flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition">
-                    {copiado ? <><Check size={12} /> ¡Copiado!</> : <><Copy size={12} /> Copiar</>}
-                  </button>
-                </div>
-              )}
+          {/* Overlay degradado para legibilidad */}
+          <div className={`absolute inset-0 bg-gradient-to-r ${banner.overlay}`} />
+
+          {/* Contenido */}
+          <div className="relative z-10 h-full flex flex-col justify-between p-5">
+            <div>
+              <span className="inline-block bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full mb-2 backdrop-blur-sm">
+                {banner.emoji} {banner.badge}
+              </span>
+              <h3 className="text-white font-bold text-lg leading-tight drop-shadow">
+                {banner.titulo}
+              </h3>
+              <p className="text-white/80 text-sm mt-0.5 drop-shadow">
+                {banner.texto}
+              </p>
             </div>
+
+            {/* Link de afiliado */}
+            {linkAfiliado && (
+              <div className="flex items-center gap-2 mt-2">
+                <div className="flex-1 bg-black/30 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs text-white/70 truncate font-mono">
+                  {linkAfiliado}
+                </div>
+                <button onClick={copiarLink}
+                  className="flex-shrink-0 flex items-center gap-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-lg transition">
+                  {copiado ? <><Check size={12} /> ¡Copiado!</> : <><Copy size={12} /> Copiar</>}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Indicadores de slide */}
-          <div className="flex justify-center gap-1.5 mt-4">
+          <div className="absolute bottom-3 right-5 flex gap-1.5 z-10">
             {BANNERS.map((_, i) => (
               <button key={i} onClick={() => setBannerIdx(i)}
-                className={`w-1.5 h-1.5 rounded-full transition-all ${
-                  i === bannerIdx ? "bg-white w-4" : "bg-white/30"
+                className={`h-1.5 rounded-full transition-all ${
+                  i === bannerIdx ? "bg-white w-4" : "bg-white/40 w-1.5"
                 }`} />
             ))}
           </div>
