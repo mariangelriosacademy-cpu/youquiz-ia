@@ -50,12 +50,7 @@ export async function register(formData: FormData) {
     console.error("Error creando perfil:", e);
   }
 
-  if (data.session === null) {
-    return { confirmar: true };
-  }
-
-  revalidatePath("/", "layout");
-  return { success: true };
+  return { confirmar: true };
 }
 
 export async function logout() {

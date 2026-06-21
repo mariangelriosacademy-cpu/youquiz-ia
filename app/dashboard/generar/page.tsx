@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 import {
   Loader2, Sparkles, Save, RefreshCw, Printer, Monitor,
-  ChevronRight, Download, Copy, Edit2, Check, X, ChevronDown, ChevronUp
+  Download, Copy, Edit2, Check, X, ChevronDown, ChevronUp
 } from "lucide-react";
 
 interface Pregunta {
@@ -95,10 +95,8 @@ function GenerarPage() {
   const [saving, setSaving] = useState(false);
   const [examen, setExamen] = useState<Examen | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [creditos, setCreditos] = useState<number | null>(null);
   const [tipoSeleccionado, setTipoSeleccionado] = useState<string | null>(null);
   const [mostrarOpciones, setMostrarOpciones] = useState(false);
-
   const [editandoIdx, setEditandoIdx] = useState<number | null>(null);
   const [preguntaEditada, setPreguntaEditada] = useState<Pregunta | null>(null);
   const [mostrarDuplicar, setMostrarDuplicar] = useState(false);
@@ -110,18 +108,17 @@ function GenerarPage() {
   const gradoFinal = grado === "otro" ? gradoPersonalizado : grado;
 
   useEffect(() => {
-    async function cargarCreditos() {
+    async function cargarDatos() {
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       );
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase.from("profiles").select("creditos, nombre").eq("id", user.id).single();
-      setCreditos(data?.creditos ?? 0);
+      const { data } = await supabase.from("profiles").select("nombre").eq("id", user.id).single();
       setDocente(data?.nombre || "");
     }
-    cargarCreditos();
+    cargarDatos();
     const temaParam = searchParams.get("tema");
     const nivelParam = searchParams.get("nivel");
     if (temaParam) setTema(temaParam);
@@ -187,7 +184,6 @@ function GenerarPage() {
     }).select().single();
     if (error) { setError("No se pudo guardar el examen."); setSaving(false); return; }
     await supabase.from("profiles").update({ creditos: perfil.creditos - 1 }).eq("id", user.id);
-    setCreditos(prev => (prev !== null ? prev - 1 : null));
     router.push(`/dashboard/examen/${data.id}`);
   }
 
@@ -328,9 +324,9 @@ function GenerarPage() {
     <>
       <style>{`@media print { .no-print { display: none !important; } body { background: white !important; color: black !important; } }`}</style>
       <div className="min-h-screen bg-[#0F0F1A]">
-        <div className="max-w-6xl mx-auto px-4 pt-32 pb-6 md:py-8">
+        <div className="max-w-6xl mx-auto px-4 pt-24 pb-6 md:py-8">
 
-          {/* PANEL MOBILE — tipo examen colapsable */}
+          {/* PANEL MOBILE */}
           <div className="no-print md:hidden mb-4 mt-2">
             <button onClick={() => setMostrarOpciones(!mostrarOpciones)}
               className="w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white transition">
@@ -340,7 +336,6 @@ function GenerarPage() {
               </span>
               {mostrarOpciones ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
             </button>
-
             {mostrarOpciones && (
               <div className="mt-2 bg-white/5 border border-white/10 rounded-xl p-3 space-y-1">
                 {TIPOS_EXAMEN.map((tipo) => (
@@ -367,24 +362,10 @@ function GenerarPage() {
             )}
           </div>
 
-          {/* LAYOUT DESKTOP */}
           <div className="flex gap-6">
-
             {/* SIDEBAR DESKTOP */}
             <aside className="no-print hidden md:block w-56 flex-shrink-0">
               <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sticky top-8">
-                {creditos !== null && (
-                  <div className="mb-4 bg-violet-600/10 border border-violet-500/20 rounded-xl p-3 text-center">
-                    <p className="text-xs text-slate-400">Tus créditos</p>
-                    <p className="text-2xl font-bold text-violet-400">{creditos}</p>
-                    {creditos <= 3 && (
-                      <button onClick={() => router.push("/precios")}
-                        className="mt-1 text-xs text-yellow-400 hover:text-yellow-300 transition">
-                        ⚡ Comprar más
-                      </button>
-                    )}
-                  </div>
-                )}
                 <h3 className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Tipo de examen</h3>
                 <div className="space-y-1">
                   {TIPOS_EXAMEN.map((tipo) => (
@@ -423,12 +404,9 @@ function GenerarPage() {
             {/* CONTENIDO */}
             <div className="flex-1 min-w-0">
               <div className="no-print mb-4">
-                
-<h1 className="text-lg md:text-xl font-bold text-white">✨ Generar examen con IA</h1>
+                <h1 className="text-lg md:text-xl font-bold text-white">✨ Generar examen con IA</h1>
                 <p className="text-slate-400 text-xs mt-1">
-                  {tipoSeleccionado
-                    ? `Modo: ${tipoSeleccionado} · ${cantidad} preguntas`
-                    : "Selecciona un tipo o configura manualmente."}
+                  {tipoSeleccionado ? `Modo: ${tipoSeleccionado} · ${cantidad} preguntas` : "Selecciona un tipo o configura manualmente."}
                 </p>
               </div>
 
@@ -580,6 +558,7 @@ function GenerarPage() {
                     </div>
                   )}
 
+                  {/* BOTONES SUPERIORES */}
                   <div className="no-print flex items-center justify-between mb-4 flex-wrap gap-2">
                     <div>
                       <h2 className="text-base font-semibold text-white">{examen.titulo}</h2>
@@ -601,16 +580,27 @@ function GenerarPage() {
                             <Printer size={12} /> Imprimir
                           </button>
                           <button onClick={descargarPDF}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-xs transition">
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 rounded-lg text-xs transition">
                             <Download size={12} /> PDF
+                          </button>
+                          <button onClick={guardarExamen} disabled={saving}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white rounded-lg text-xs transition">
+                            {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+                            {saving ? "Guardando..." : "Guardar"}
                           </button>
                         </>
                       ) : (
-                        <button onClick={guardarExamen} disabled={saving}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white rounded-lg text-xs transition">
-                          {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
-                          {saving ? "Guardando..." : "Guardar"}
-                        </button>
+                        <>
+                          <button onClick={descargarPDF}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 rounded-lg text-xs transition">
+                            <Download size={12} /> PDF
+                          </button>
+                          <button onClick={guardarExamen} disabled={saving}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white rounded-lg text-xs transition">
+                            {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+                            {saving ? "Guardando..." : "Guardar"}
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -741,6 +731,7 @@ function GenerarPage() {
                     ))}
                   </div>
 
+                  {/* BOTONES INFERIORES */}
                   <div className="no-print flex gap-2 mt-4">
                     <button onClick={generarExamen} disabled={loading}
                       className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-medium rounded-lg py-2.5 text-sm transition flex items-center justify-center gap-2">
@@ -753,16 +744,27 @@ function GenerarPage() {
                           <Printer size={14} /> Imprimir
                         </button>
                         <button onClick={descargarPDF}
-                          className="flex-1 bg-violet-600 hover:bg-violet-500 text-white font-medium rounded-lg py-2.5 text-sm transition flex items-center justify-center gap-2">
+                          className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-medium rounded-lg py-2.5 text-sm transition flex items-center justify-center gap-2">
                           <Download size={14} /> PDF
+                        </button>
+                        <button onClick={guardarExamen} disabled={saving}
+                          className="flex-1 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-medium rounded-lg py-2.5 text-sm transition flex items-center justify-center gap-2">
+                          {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                          {saving ? "Guardando..." : "Guardar"}
                         </button>
                       </>
                     ) : (
-                      <button onClick={guardarExamen} disabled={saving}
-                        className="flex-1 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-medium rounded-lg py-2.5 text-sm transition flex items-center justify-center gap-2">
-                        {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                        {saving ? "Guardando..." : "Guardar examen"}
-                      </button>
+                      <>
+                        <button onClick={descargarPDF}
+                          className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-medium rounded-lg py-2.5 text-sm transition flex items-center justify-center gap-2">
+                          <Download size={14} /> PDF
+                        </button>
+                        <button onClick={guardarExamen} disabled={saving}
+                          className="flex-1 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-medium rounded-lg py-2.5 text-sm transition flex items-center justify-center gap-2">
+                          {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                          {saving ? "Guardando..." : "Guardar examen"}
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>

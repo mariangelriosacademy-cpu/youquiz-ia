@@ -193,8 +193,11 @@ export default function QuizPage() {
           <div className={`${card} border rounded-2xl p-8`}>
             <h1 className={`text-xl font-bold ${texto} mb-1`}>{examen.titulo}</h1>
             <p className={`${subtexto} text-sm mb-2`}>
-              {examen.preguntas.length} preguntas · Completa tus datos para comenzar
-            </p>
+  {examen.preguntas.length} preguntas
+  {examen.grado ? ` · ${examen.grado}` : ""}
+  {examen.asignatura ? ` · ${examen.asignatura}` : ""}
+</p>
+<p className={`${subtexto} text-xs mb-2`}>Completa tus datos para comenzar</p>
             <div className={`flex items-center gap-2 text-xs mb-6 ${subtexto}`}>
               <span>⏱️ 45 seg por pregunta (90 seg preguntas abiertas)</span>
             </div>

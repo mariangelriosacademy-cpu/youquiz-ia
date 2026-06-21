@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// ─── MODO DEMO (sin API key) ──────────────────────────────────────────────────
 function generarExamenDemo(tema: string, nivel: string, cantidad: number, tipos: string[]) {
   const preguntas = [];
   for (let i = 1; i <= cantidad; i++) {
@@ -40,18 +39,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Faltan parámetros." }, { status: 400 });
     }
 
-    // Si hay API key usa Claude, si no usa el demo
     if (!process.env.ANTHROPIC_API_KEY) {
-      const examenDemo = generarExamenDemo(tema, nivel, cantidad, tipos);
-      return NextResponse.json(examenDemo);
+      return NextResponse.json(generarExamenDemo(tema, nivel, cantidad, tipos));
     }
 
-    // ─── CON API KEY: llama a Claude ─────────────────────────────────────────
     const Anthropic = (await import("@anthropic-ai/sdk")).default;
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
     const tiposTexto = tipos.map((t: string) => {
-      if (t === "multiple") return "opción múltiple (4 opciones)";
+      if (t === "multiple") return "opción múltiple (4 opciones A, B, C, D)";
       if (t === "verdadero_falso") return "verdadero o falso";
       if (t === "abierta") return "pregunta abierta";
       return t;
@@ -60,20 +56,55 @@ export async function POST(request: NextRequest) {
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 4096,
-      system: "Eres un experto en pedagogía que crea exámenes de alta calidad. Responde ÚNICAMENTE con un JSON válido, sin texto adicional ni bloques de código markdown.",
+      system: `Eres un experto en pedagogía latinoamericana. Crea exámenes de alta calidad.
+IMPORTANTE: Responde ÚNICAMENTE con JSON puro y válido. 
+NO uses bloques de código markdown.
+NO agregues texto antes o después del JSON.
+El JSON debe comenzar con { y terminar con }.`,
       messages: [{
         role: "user",
-        content: `Crea un examen sobre "${tema}" para nivel ${nivel}. Cantidad: ${cantidad} preguntas. Tipos: ${tiposTexto}. Devuelve ÚNICAMENTE este JSON: { "titulo": string, "preguntas": [{ "id": number, "tipo": string, "pregunta": string, "opciones"?: string[], "respuesta_correcta": string, "explicacion": string }] }`
+        content: `Crea un examen sobre "${tema}" para nivel ${nivel} con ${cantidad} preguntas de tipo: ${tiposTexto}.
+
+El JSON debe tener exactamente esta estructura:
+{
+  "titulo": "Examen de [tema] — Nivel [nivel]",
+  "preguntas": [
+    {
+      "id": 1,
+      "tipo": "multiple",
+      "pregunta": "texto de la pregunta",
+      "opciones": ["A) opción", "B) opción", "C) opción", "D) opción"],
+      "respuesta_correcta": "A) opción correcta",
+      "explicacion": "explicación breve"
+    }
+  ]
+}
+
+Para verdadero_falso no incluyas "opciones".
+Para abierta no incluyas "opciones".`
       }]
     });
 
     const text = response.content[0].type === "text" ? response.content[0].text : "";
-    const clean = text.replace(/```json/g, "").replace(/```/g, "").trim();
+    
+    // Limpiar el texto de cualquier markdown
+    let clean = text
+      .replace(/```json\n?/gi, "")
+      .replace(/```\n?/gi, "")
+      .trim();
+    
+    // Encontrar el JSON entre { y }
+    const start = clean.indexOf("{");
+    const end = clean.lastIndexOf("}");
+    if (start !== -1 && end !== -1) {
+      clean = clean.substring(start, end + 1);
+    }
+
     const exam = JSON.parse(clean);
     return NextResponse.json(exam);
 
-  } catch (error) {
-    console.error("Error:", error);
+  } catch (error: any) {
+    console.error("Error generando examen:", error?.message || error);
     return NextResponse.json({ error: "No se pudo generar el examen." }, { status: 500 });
   }
 }
