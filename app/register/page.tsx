@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { register } from "../auth/actions";
@@ -20,17 +20,20 @@ function Confeti() {
   return (
     <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
       {piezas.map((p) => (
-        <div key={p.id} style={{
-          position: "absolute",
-          left: p.left,
-          top: "-10px",
-          width: p.size,
-          height: p.size,
-          backgroundColor: p.color,
-          borderRadius: Math.random() > 0.5 ? "50%" : "2px",
-          transform: `rotate(${p.rotate})`,
-          animation: `caer ${p.duration} ${p.delay} ease-in forwards`,
-        }} />
+        <div
+          key={p.id}
+          style={{
+            position: "absolute",
+            left: p.left,
+            top: "-10px",
+            width: p.size,
+            height: p.size,
+            backgroundColor: p.color,
+            borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+            transform: `rotate(${p.rotate})`,
+            animation: `caer ${p.duration} ${p.delay} ease-in forwards`,
+          }}
+        />
       ))}
       <style>{`
         @keyframes caer {
@@ -44,35 +47,59 @@ function Confeti() {
 
 export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  // "idle" | "confirmar" | "directo"
+  const [estado, setEstado] = useState<"idle" | "confirmar" | "directo">("idle");
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     const formData = new FormData(e.currentTarget);
     const password = formData.get("password") as string;
     const confirm = formData.get("confirm") as string;
-    if (password !== confirm) { setError("Las contraseñas no coinciden."); return; }
-    if (password.length < 6) { setError("La contraseña debe tener al menos 6 caracteres."); return; }
+
+    if (password !== confirm) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+
     startTransition(async () => {
       const result = await register(formData);
+
       if (result?.error) {
         setError(result.error || "Error desconocido. Intenta de nuevo.");
-      } else if (result?.confirmar) {
+        return;
+      }
+
+      if (result?.directo) {
+        // Supabase no requiere confirmación: mostramos confeti y redirigimos al dashboard
+        setEstado("directo");
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 2800);
+        return;
+      }
+
+      // Caso normal: Supabase envió el correo de confirmación
+      setEstado("confirmar");
+      setTimeout(() => {
         window.location.href = "/confirmar-email";
-      } else {
-  window.location.href = "/confirmar-email";
-}
+      }, 2800);
     });
   }
 
+  const registroExitoso = estado === "confirmar" || estado === "directo";
+
   return (
     <main className="min-h-screen bg-[#0F0F1A] flex items-center justify-center px-4">
-      {success && <Confeti />}
+      {/* Confeti solo cuando el registro fue exitoso */}
+      {registroExitoso && <Confeti />}
 
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-violet-600/20 rounded-full blur-3xl" />
@@ -90,15 +117,26 @@ export default function RegisterPage() {
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
-          {success ? (
+          {registroExitoso ? (
             <div className="text-center py-6">
-              <div className="text-6xl mb-4">🎉</div>
-              <h2 className="text-xl font-bold text-white mb-2">¡Cuenta creada!</h2>
-              <p className="text-slate-400 text-sm">Bienvenido a YouQuiz IA. Redirigiendo al dashboard...</p>
+              <div className="text-6xl mb-4">
+                {estado === "directo" ? "🎉" : "📬"}
+              </div>
+              <h2 className="text-xl font-bold text-white mb-2">
+                {estado === "directo" ? "¡Cuenta creada!" : "¡Revisa tu correo!"}
+              </h2>
+              <p className="text-slate-400 text-sm">
+                {estado === "directo"
+                  ? "Bienvenido a YouQuiz IA. Redirigiendo al dashboard..."
+                  : "Te enviamos un enlace de confirmación. Redirigiendo..."}
+              </p>
               <div className="mt-4 flex justify-center gap-1">
-                {[0,1,2].map(i => (
-                  <div key={i} className="w-2 h-2 bg-violet-400 rounded-full animate-bounce"
-                    style={{ animationDelay: `${i * 0.15}s` }} />
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="w-2 h-2 bg-violet-400 rounded-full animate-bounce"
+                    style={{ animationDelay: `${i * 0.15}s` }}
+                  />
                 ))}
               </div>
             </div>
@@ -113,45 +151,74 @@ export default function RegisterPage() {
                 )}
 
                 <div className="space-y-1.5">
-                  <label htmlFor="name" className="block text-sm font-medium text-slate-300">Nombre completo</label>
-                  <input id="name" name="name" type="text" autoComplete="name" required placeholder="María González"
-                    className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition" />
+                  <label htmlFor="name" className="block text-sm font-medium text-slate-300">
+                    Nombre completo
+                  </label>
+                  <input
+                    id="name" name="name" type="text"
+                    autoComplete="name" required placeholder="María González"
+                    className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
+                  />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label htmlFor="email" className="block text-sm font-medium text-slate-300">Correo electrónico</label>
-                  <input id="email" name="email" type="email" autoComplete="email" required placeholder="tu@correo.com"
-                    className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition" />
+                  <label htmlFor="email" className="block text-sm font-medium text-slate-300">
+                    Correo electrónico
+                  </label>
+                  <input
+                    id="email" name="email" type="email"
+                    autoComplete="email" required placeholder="tu@correo.com"
+                    className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
+                  />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label htmlFor="password" className="block text-sm font-medium text-slate-300">Contraseña</label>
+                  <label htmlFor="password" className="block text-sm font-medium text-slate-300">
+                    Contraseña
+                  </label>
                   <div className="relative">
-                    <input id="password" name="password" type={showPassword ? "text" : "password"}
+                    <input
+                      id="password" name="password"
+                      type={showPassword ? "text" : "password"}
                       autoComplete="new-password" required placeholder="Mínimo 6 caracteres"
-                      className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-lg px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition" />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors">
+                      className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-lg px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
+                    >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label htmlFor="confirm" className="block text-sm font-medium text-slate-300">Confirmar contraseña</label>
+                  <label htmlFor="confirm" className="block text-sm font-medium text-slate-300">
+                    Confirmar contraseña
+                  </label>
                   <div className="relative">
-                    <input id="confirm" name="confirm" type={showConfirm ? "text" : "password"}
+                    <input
+                      id="confirm" name="confirm"
+                      type={showConfirm ? "text" : "password"}
                       autoComplete="new-password" required placeholder="••••••••"
-                      className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-lg px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition" />
-                    <button type="button" onClick={() => setShowConfirm(!showConfirm)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors">
+                      className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-lg px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirm(!showConfirm)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
+                    >
                       {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
                 </div>
 
-                <button type="submit" disabled={isPending}
-                  className="w-full bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg py-2.5 text-sm transition-colors mt-2">
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="w-full bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg py-2.5 text-sm transition-colors mt-2"
+                >
                   {isPending ? "Creando cuenta..." : "Crear cuenta"}
                 </button>
               </form>
@@ -159,7 +226,7 @@ export default function RegisterPage() {
           )}
         </div>
 
-        {!success && (
+        {!registroExitoso && (
           <p className="text-center text-sm text-slate-500 mt-6">
             ¿Ya tienes cuenta?{" "}
             <Link href="/login" className="text-violet-400 hover:text-violet-300 font-medium transition-colors">

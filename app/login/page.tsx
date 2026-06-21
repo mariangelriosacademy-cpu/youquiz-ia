@@ -19,15 +19,17 @@ function LoginContent() {
     setError(null);
     const formData = new FormData(e.currentTarget);
     formData.set("next", next);
+
     startTransition(async () => {
       const result = await login(formData);
       if (result?.error) {
         setError(result.error);
       } else {
+        // Mostramos el toast PRIMERO, redirigimos después de 2.5s
         setSuccess(true);
         setTimeout(() => {
           window.location.href = next;
-        }, 1500);
+        }, 2500);
       }
     });
   }
@@ -35,11 +37,18 @@ function LoginContent() {
   return (
     <main className="min-h-screen bg-[#0F0F1A] flex items-center justify-center px-4">
 
-      {/* Toast bienvenida */}
+      {/* Toast de bienvenida — aparece 2.5s antes del redirect */}
       {success && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-green-500 text-white px-6 py-3 rounded-2xl shadow-lg animate-bounce">
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-green-500 text-white px-6 py-3 rounded-2xl shadow-2xl"
+          style={{ animation: "slideDown 0.4s ease-out forwards" }}>
           <CheckCircle size={20} />
-          <span className="font-semibold text-sm">¡Bienvenido de vuelta! 👋</span>
+          <span className="font-semibold text-sm whitespace-nowrap">¡Bienvenido de vuelta! 👋</span>
+          <style>{`
+            @keyframes slideDown {
+              from { opacity: 0; transform: translateX(-50%) translateY(-16px); }
+              to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+            }
+          `}</style>
         </div>
       )}
 
@@ -106,7 +115,8 @@ function LoginContent() {
             </div>
 
             <button
-              type="submit" disabled={isPending || success}
+              type="submit"
+              disabled={isPending || success}
               className="w-full bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg py-2.5 text-sm transition-colors mt-2"
             >
               {isPending ? "Ingresando..." : success ? "¡Bienvenido! 👋" : "Ingresar"}

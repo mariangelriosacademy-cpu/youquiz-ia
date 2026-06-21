@@ -23,7 +23,11 @@ export async function register(formData: FormData) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { full_name: name } },
+    options: {
+      data: { full_name: name },
+      // Redirigir al confirmar desde el link del correo
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+    },
   });
 
   if (error) {
@@ -38,18 +42,27 @@ export async function register(formData: FormData) {
     return { error: "No se pudo crear la cuenta. Intenta de nuevo." };
   }
 
+  // Intentar crear perfil (el trigger de Supabase también lo hace, esto es fallback)
   try {
-    await supabase.from("profiles").insert({
+    await supabase.from("profiles").upsert({
       id: data.user.id,
       email,
       nombre: name,
       plan: "free",
       examenes_mes: 0,
-    });
+    }, { onConflict: "id" });
   } catch (e) {
     console.error("Error creando perfil:", e);
   }
 
+  // Si Supabase devuelve sesión activa = email confirmation está DESACTIVADO
+  // → el usuario puede ir directo al dashboard sin confirmar correo
+  if (data.session) {
+    revalidatePath("/", "layout");
+    return { directo: true };
+  }
+
+  // Si no hay sesión = Supabase envió correo de confirmación (modo normal)
   return { confirmar: true };
 }
 
