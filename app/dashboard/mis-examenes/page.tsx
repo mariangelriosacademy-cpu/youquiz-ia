@@ -29,15 +29,20 @@ export default function MisExamenesPage() {
     setLoading(false);
   }
 
-  async function eliminarExamen(id: string) {
-    if (!confirm("¿Seguro que quieres eliminar este examen?")) return;
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-    await supabase.from("exams").delete().eq("id", id);
+ async function eliminarExamen(id: string) {
+  if (!confirm("¿Seguro que quieres eliminar este examen?")) return;
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { error } = await supabase.from("exams").delete().eq("id", id);
+  console.log("Error al eliminar:", error);
+  if (!error) {
     setExamenes(prev => prev.filter(e => e.id !== id));
+  } else {
+    alert("Error: " + error.message);
   }
+}
 
   function copiarLink(id: string) {
     navigator.clipboard.writeText(`${window.location.origin}/quiz/${id}`);

@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
-import { ArrowLeft, Trophy, Users, TrendingUp, TrendingDown, Download } from "lucide-react";
+import { ArrowLeft, Trophy, Users, TrendingUp, TrendingDown, Download, ChevronDown, ChevronUp, CheckCircle, XCircle } from "lucide-react";
 
 export default function ResultadosPage() {
   const { id } = useParams();
   const router = useRouter();
   const [examen, setExamen] = useState<any>(null);
   const [sesiones, setSesiones] = useState<any[]>([]);
+  const [respuestas, setRespuestas] = useState<Record<string, any[]>>({});
+  const [expandido, setExpandido] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,6 +28,20 @@ export default function ResultadosPage() {
     }
     cargar();
   }, [id]);
+
+  async function cargarRespuestas(sessionId: string) {
+    if (respuestas[sessionId]) {
+      setExpandido(expandido === sessionId ? null : sessionId);
+      return;
+    }
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const { data } = await supabase.from("responses").select("*").eq("session_id", sessionId).order("pregunta_index");
+    setRespuestas(prev => ({ ...prev, [sessionId]: data || [] }));
+    setExpandido(sessionId);
+  }
 
   function getLogro(porcentaje: number) {
     if (porcentaje >= 90) return { label: "Excelente", color: "bg-green-500/20 text-green-400", emoji: "🏆" };
@@ -51,7 +67,6 @@ export default function ResultadosPage() {
     const titulo = examen.titulo.replace(/ \(.*?\)/g, "");
     const fechaHoy = new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
 
-    // ── ENCABEZADO ──
     doc.setFillColor(108, 63, 196);
     doc.rect(0, 0, ancho, 50, "F");
     doc.setTextColor(255, 255, 255);
@@ -63,15 +78,10 @@ export default function ResultadosPage() {
     doc.text(titulo, ancho / 2, 22, { align: "center" });
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
-    if (examen.docente_nombre) {
-      doc.text(`Docente: ${examen.docente_nombre}`, ancho / 2, 31, { align: "center" });
-    }
-    if (examen.asignatura) {
-      doc.text(`Asignatura: ${examen.asignatura}`, ancho / 2, 38, { align: "center" });
-    }
+    if (examen.docente_nombre) doc.text(`Docente: ${examen.docente_nombre}`, ancho / 2, 31, { align: "center" });
+    if (examen.asignatura) doc.text(`Asignatura: ${examen.asignatura}`, ancho / 2, 38, { align: "center" });
     doc.text(`Fecha: ${fechaHoy}`, ancho / 2, 46, { align: "center" });
 
-    // ── MÉTRICAS ──
     const metricas = [
       { label: "Total estudiantes", valor: String(sesiones.length) },
       { label: "Aprobados", valor: `${aprobadosPDF} (${aprobadosPct}%)` },
@@ -83,7 +93,6 @@ export default function ResultadosPage() {
 
     const colW = (ancho - 28) / 3;
     let y = 58;
-
     metricas.forEach((m, i) => {
       const col = i % 3;
       const fila = Math.floor(i / 3);
@@ -100,10 +109,8 @@ export default function ResultadosPage() {
       doc.setFont("helvetica", "bold");
       doc.text(m.valor, x + 4, yPos + 14);
     });
-
     y += 50;
 
-    // ── BARRA ──
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(80, 80, 80);
@@ -116,44 +123,29 @@ export default function ResultadosPage() {
     }
     y += 22;
 
-    // ── TABLA ──
     autoTable(doc, {
       startY: y,
       head: [["#", "Estudiante", "Seccion", "Puntaje", "Total", "%", "Logro", "Fecha"]],
       body: sesiones.map((s, idx) => {
         const pct = Math.round((s.puntaje / s.total) * 100);
         const logro = pct >= 90 ? "Excelente" : pct >= 70 ? "Aprobado" : pct >= 50 ? "Regular" : "Reprobado";
-        return [
-          idx + 1,
-          s.estudiante_nombre,
-          s.seccion || "-",
-          s.puntaje,
-          s.total,
-          `${pct}%`,
-          logro,
-          new Date(s.completado_at).toLocaleDateString("es-ES"),
-        ];
+        return [idx + 1, s.estudiante_nombre, s.seccion || "-", s.puntaje, s.total, `${pct}%`, logro,
+          new Date(s.completado_at).toLocaleDateString("es-ES")];
       }),
       headStyles: { fillColor: [108, 63, 196], textColor: [255, 255, 255], fontStyle: "bold", fontSize: 8 },
       bodyStyles: { fontSize: 8, textColor: [50, 50, 50] },
       alternateRowStyles: { fillColor: [248, 245, 255] },
       columnStyles: {
         0: { halign: "center", cellWidth: 8 },
-        2: { halign: "center" },
-        3: { halign: "center" },
-        4: { halign: "center" },
-        5: { halign: "center", fontStyle: "bold" },
-        6: { halign: "center" },
-        7: { halign: "center" },
+        2: { halign: "center" }, 3: { halign: "center" }, 4: { halign: "center" },
+        5: { halign: "center", fontStyle: "bold" }, 6: { halign: "center" }, 7: { halign: "center" },
       },
       didDrawCell: (data: any) => {
         if (data.section === "body" && data.column.index === 6) {
           const val = data.cell.text[0];
           const colors: Record<string, [number, number, number]> = {
-            "Excelente": [34, 197, 94],
-            "Aprobado": [59, 130, 246],
-            "Regular": [234, 179, 8],
-            "Reprobado": [239, 68, 68],
+            "Excelente": [34, 197, 94], "Aprobado": [59, 130, 246],
+            "Regular": [234, 179, 8], "Reprobado": [239, 68, 68],
           };
           const c = colors[val] || [150, 150, 150];
           doc.setTextColor(c[0], c[1], c[2]);
@@ -166,7 +158,6 @@ export default function ResultadosPage() {
       },
     });
 
-    // ── PIE ──
     const totalPages = (doc as any).internal.getNumberOfPages();
     for (let pg = 1; pg <= totalPages; pg++) {
       doc.setPage(pg);
@@ -179,7 +170,6 @@ export default function ResultadosPage() {
       doc.text("Generado con YouQuiz IA", 14, h - 5);
       doc.text(`Pagina ${pg} de ${totalPages}`, ancho - 14, h - 5, { align: "right" });
     }
-
     doc.save(`Resultados-${titulo}.pdf`);
   }
 
@@ -209,9 +199,7 @@ export default function ResultadosPage() {
           <div>
             <h1 className="text-xl font-bold text-white">📊 Resultados</h1>
             <p className="text-slate-400 text-sm mt-0.5">{examen?.titulo}</p>
-            {examen?.docente_nombre && (
-              <p className="text-slate-500 text-xs mt-0.5">Docente: {examen.docente_nombre}</p>
-            )}
+            {examen?.docente_nombre && <p className="text-slate-500 text-xs mt-0.5">Docente: {examen.docente_nombre}</p>}
           </div>
           {sesiones.length > 0 && (
             <button onClick={descargarPDF}
@@ -268,36 +256,78 @@ export default function ResultadosPage() {
               {sesiones.map((s, i) => {
                 const pct = Math.round((s.puntaje / s.total) * 100);
                 const logro = getLogro(pct);
+                const estaExpandido = expandido === s.id;
+                const resps = respuestas[s.id] || [];
+
                 return (
-                  <div key={i} className="px-5 py-4 flex items-center gap-4">
-                    <div className="w-8 h-8 rounded-full bg-violet-600/30 flex items-center justify-center text-violet-400 text-sm font-bold flex-shrink-0">
-                      {i + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white text-sm font-medium truncate">{s.estudiante_nombre}</p>
-                      <p className="text-slate-500 text-xs">
-                        {new Date(s.completado_at).toLocaleDateString("es-ES", {
-                          day: "numeric", month: "short", year: "numeric",
-                          hour: "2-digit", minute: "2-digit"
-                        })}
-                        {s.seccion && ` · Sección ${s.seccion}`}
-                      </p>
-                    </div>
-                    <div className="text-center flex-shrink-0">
-                      <p className="text-white font-bold text-sm">{s.puntaje}/{s.total}</p>
-                      <p className="text-slate-400 text-xs">{pct}%</p>
-                    </div>
-                    <div className="flex-shrink-0">
-                      <span className={`text-xs px-3 py-1 rounded-full font-medium ${logro.color}`}>
-                        {logro.emoji} {logro.label}
-                      </span>
-                    </div>
-                    <div className="w-20 flex-shrink-0 hidden sm:block">
-                      <div className="w-full bg-white/10 rounded-full h-2">
-                        <div className={`h-2 rounded-full ${pct >= 70 ? "bg-green-500" : pct >= 50 ? "bg-yellow-500" : "bg-red-500"}`}
-                          style={{ width: `${pct}%` }} />
+                  <div key={i}>
+                    <div className="px-5 py-4 flex items-center gap-4">
+                      <div className="w-8 h-8 rounded-full bg-violet-600/30 flex items-center justify-center text-violet-400 text-sm font-bold flex-shrink-0">
+                        {i + 1}
                       </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-sm font-medium truncate">{s.estudiante_nombre}</p>
+                        <p className="text-slate-500 text-xs">
+                          {new Date(s.completado_at).toLocaleDateString("es-ES", {
+                            day: "numeric", month: "short", year: "numeric",
+                            hour: "2-digit", minute: "2-digit"
+                          })}
+                          {s.seccion && ` · Sección ${s.seccion}`}
+                        </p>
+                      </div>
+                      <div className="text-center flex-shrink-0">
+                        <p className="text-white font-bold text-sm">{s.puntaje}/{s.total}</p>
+                        <p className="text-slate-400 text-xs">{pct}%</p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <span className={`text-xs px-3 py-1 rounded-full font-medium ${logro.color}`}>
+                          {logro.emoji} {logro.label}
+                        </span>
+                      </div>
+                      <div className="w-20 flex-shrink-0 hidden sm:block">
+                        <div className="w-full bg-white/10 rounded-full h-2">
+                          <div className={`h-2 rounded-full ${pct >= 70 ? "bg-green-500" : pct >= 50 ? "bg-yellow-500" : "bg-red-500"}`}
+                            style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                      <button onClick={() => cargarRespuestas(s.id)}
+                        className="flex-shrink-0 flex items-center gap-1 px-2 py-1 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white rounded-lg text-xs transition">
+                        {estaExpandido ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                        Ver
+                      </button>
                     </div>
+
+                    {/* RESPUESTAS EXPANDIDAS */}
+                    {estaExpandido && (
+                      <div className="px-5 pb-4 bg-white/2">
+                        <div className="bg-black/20 rounded-xl p-4 space-y-3">
+                          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Respuestas de {s.estudiante_nombre}</p>
+                          {resps.map((r, j) => {
+                            const pregunta = examen?.preguntas?.[r.pregunta_index];
+                            return (
+                              <div key={j} className={`rounded-lg p-3 border ${r.es_correcta ? "bg-green-500/5 border-green-500/20" : "bg-red-500/5 border-red-500/20"}`}>
+                                <div className="flex items-start gap-2">
+                                  {r.es_correcta
+                                    ? <CheckCircle size={14} className="text-green-400 flex-shrink-0 mt-0.5" />
+                                    : <XCircle size={14} className="text-red-400 flex-shrink-0 mt-0.5" />}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-slate-300 text-xs font-medium">{pregunta?.pregunta || `Pregunta ${r.pregunta_index + 1}`}</p>
+                                    <p className={`text-xs mt-1 ${r.es_correcta ? "text-green-400" : "text-red-400"}`}>
+                                      Respondió: <span className="font-medium">{r.respuesta_dada || "Sin respuesta"}</span>
+                                    </p>
+                                    {!r.es_correcta && pregunta?.respuesta_correcta && (
+                                      <p className="text-xs text-green-400 mt-0.5">
+                                        Correcta: <span className="font-medium">{pregunta.respuesta_correcta}</span>
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
