@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
-import { Sparkles, ClipboardList } from "lucide-react";
+import { Sparkles, ClipboardList, Copy, Check } from "lucide-react";
 import { useTheme } from "./theme-context";
 
 export default function DashboardPage() {
@@ -11,6 +11,35 @@ export default function DashboardPage() {
   const { dark } = useTheme();
   const [perfil, setPerfil] = useState<any>(null);
   const [stats, setStats] = useState({ examenes: 0 });
+  const [copiado, setCopiado] = useState(false);
+  const [bannerIdx, setBannerIdx] = useState(0);
+
+  const BANNERS = [
+    {
+      emoji: "💰",
+      titulo: "¡Gana el 50% por cada referido!",
+      texto: "Comparte tu link con otros docentes y gana comisión por cada compra Plus o Pro.",
+      color: "from-yellow-600/20 to-amber-600/20 border-yellow-500/30",
+      badge: "bg-yellow-500/20 text-yellow-400",
+      badgeTexto: "Programa de afiliados",
+    },
+    {
+      emoji: "👩‍🏫",
+      titulo: "¿Conoces a otro docente?",
+      texto: "Recomienda YouQuiz IA y recibe el 50% de cada venta. Sin límite de referidos.",
+      color: "from-violet-600/20 to-pink-600/20 border-violet-500/30",
+      badge: "bg-violet-500/20 text-violet-400",
+      badgeTexto: "Gana dinero extra",
+    },
+    {
+      emoji: "🚀",
+      titulo: "Tu link, tus ganancias",
+      texto: "Cada docente que compre Plus ($4) o Pro ($6) te da $2 o $3 directo a tu PayPal.",
+      color: "from-cyan-600/20 to-blue-600/20 border-cyan-500/30",
+      badge: "bg-cyan-500/20 text-cyan-400",
+      badgeTexto: "50% de comisión",
+    },
+  ];
 
   useEffect(() => {
     async function cargar() {
@@ -28,6 +57,27 @@ export default function DashboardPage() {
     }
     cargar();
   }, []);
+
+  // Rotación automática del banner cada 4 segundos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBannerIdx(prev => (prev + 1) % BANNERS.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const linkAfiliado = perfil?.id
+    ? `https://youquiz-ia.vercel.app/register?ref=${perfil.id.slice(0, 8)}`
+    : "";
+
+  async function copiarLink() {
+    if (!linkAfiliado) return;
+    await navigator.clipboard.writeText(linkAfiliado);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
+  }
+
+  const banner = BANNERS[bannerIdx];
 
   return (
     <div className="min-h-screen youquiz-bg px-4 md:py-8" style={{paddingTop: "80px"}}>
@@ -71,6 +121,46 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* BANNER ROTATIVO DE AFILIADOS */}
+        <div className={`relative bg-gradient-to-r ${banner.color} border rounded-2xl p-5 mb-4 transition-all duration-500`}>
+          <div className="flex items-start gap-4">
+            <div className="text-3xl flex-shrink-0">{banner.emoji}</div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${banner.badge}`}>
+                  {banner.badgeTexto}
+                </span>
+              </div>
+              <h3 className="youquiz-texto font-bold text-base">{banner.titulo}</h3>
+              <p className="youquiz-subtexto text-sm mt-0.5">{banner.texto}</p>
+
+              {/* Link de afiliado */}
+              {linkAfiliado && (
+                <div className="mt-3 flex items-center gap-2">
+                  <div className="flex-1 bg-black/20 rounded-lg px-3 py-1.5 text-xs text-slate-400 truncate font-mono">
+                    {linkAfiliado}
+                  </div>
+                  <button onClick={copiarLink}
+                    className="flex-shrink-0 flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition">
+                    {copiado ? <><Check size={12} /> ¡Copiado!</> : <><Copy size={12} /> Copiar</>}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Indicadores de slide */}
+          <div className="flex justify-center gap-1.5 mt-4">
+            {BANNERS.map((_, i) => (
+              <button key={i} onClick={() => setBannerIdx(i)}
+                className={`w-1.5 h-1.5 rounded-full transition-all ${
+                  i === bannerIdx ? "bg-white w-4" : "bg-white/30"
+                }`} />
+            ))}
+          </div>
+        </div>
+
+        {/* BANNER COMPRAR CRÉDITOS */}
         <div className="bg-gradient-to-r from-violet-600/20 to-cyan-600/20 border border-violet-500/30 rounded-2xl p-5 flex items-center justify-between gap-4">
           <div>
             <p className="youquiz-texto font-semibold">⚡ Compra créditos</p>
@@ -81,6 +171,7 @@ export default function DashboardPage() {
             Ver planes
           </button>
         </div>
+
       </div>
     </div>
   );
