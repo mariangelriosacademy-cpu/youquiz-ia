@@ -49,15 +49,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 3500);
-      return () => clearTimeout(timer);
-    }
-  }, [success]);
-
+  
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
@@ -73,8 +65,8 @@ export default function RegisterPage() {
       } else if (result?.confirmar) {
         window.location.href = "/confirmar-email";
       } else {
-        setSuccess(true);
-      }
+  window.location.href = "/confirmar-email";
+}
     });
   }
 
