@@ -170,20 +170,49 @@ function GenerarPage() {
     );
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/login"); return; }
-    const { data: perfil } = await supabase.from("profiles").select("creditos").eq("id", user.id).single();
+
+    const { data: perfil } = await supabase
+      .from("profiles")
+      .select("creditos")
+      .eq("id", user.id)
+      .single();
+
     if (!perfil || perfil.creditos <= 0) {
       setError("No tienes créditos disponibles.");
       setSaving(false);
       router.push("/precios");
       return;
     }
-    const { data, error } = await supabase.from("exams").insert({
-      docente_id: user.id, titulo: examen.titulo, tema,
-      preguntas: examen.preguntas, tipo: "tema",
-      docente_nombre: docente, asignatura: asignaturaFinal, grado: gradoFinal,
-    }).select().single();
-    if (error) { setError("No se pudo guardar el examen."); setSaving(false); return; }
-    await supabase.from("profiles").update({ creditos: perfil.creditos - 1 }).eq("id", user.id);
+
+    const { data, error } = await supabase
+      .from("exams")
+      .insert({
+        docente_id: user.id,
+        titulo: examen.titulo,
+        tema,
+        preguntas: examen.preguntas,
+        tipo: "tema",
+        docente_nombre: docente,
+        asignatura: asignaturaFinal,
+        grado: gradoFinal,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      setError("No se pudo guardar el examen.");
+      setSaving(false);
+      return;
+    }
+
+    await supabase
+      .from("profiles")
+      .update({ creditos: perfil.creditos - 1 })
+      .eq("id", user.id);
+
+    // ✅ FIX sincronización: notificar al layout para que refresque los créditos
+    window.dispatchEvent(new CustomEvent("creditos-actualizados"));
+
     router.push(`/dashboard/examen/${data.id}`);
   }
 
@@ -558,7 +587,6 @@ function GenerarPage() {
                     </div>
                   )}
 
-                  {/* BOTONES SUPERIORES */}
                   <div className="no-print flex items-center justify-between mb-4 flex-wrap gap-2">
                     <div>
                       <h2 className="text-base font-semibold text-white">{examen.titulo}</h2>
@@ -731,7 +759,6 @@ function GenerarPage() {
                     ))}
                   </div>
 
-                  {/* BOTONES INFERIORES */}
                   <div className="no-print flex gap-2 mt-4">
                     <button onClick={generarExamen} disabled={loading}
                       className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-medium rounded-lg py-2.5 text-sm transition flex items-center justify-center gap-2">

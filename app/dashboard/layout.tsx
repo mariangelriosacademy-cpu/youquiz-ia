@@ -42,10 +42,17 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     async function cargar() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/login"); return; }
-      const { data: perfil } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+
+      const { data: perfil } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
       setUsuario(perfil);
       setCreditos(perfil?.creditos ?? 0);
 
+      // Realtime: escucha cambios en la BD
       const channel = supabase
         .channel(`creditos-${user.id}`)
         .on("postgres_changes", {
@@ -57,7 +64,23 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         })
         .subscribe();
 
-      return () => { supabase.removeChannel(channel); };
+      // ✅ FIX: escuchar evento local cuando generar/page descuenta un crédito
+      // (Realtime a veces no propaga updates del mismo cliente)
+      const handleCreditosActualizados = async () => {
+        const { data: perfilActualizado } = await supabase
+          .from("profiles")
+          .select("creditos")
+          .eq("id", user.id)
+          .single();
+        if (perfilActualizado) setCreditos(perfilActualizado.creditos ?? 0);
+      };
+
+      window.addEventListener("creditos-actualizados", handleCreditosActualizados);
+
+      return () => {
+        supabase.removeChannel(channel);
+        window.removeEventListener("creditos-actualizados", handleCreditosActualizados);
+      };
     }
 
     cargar();
