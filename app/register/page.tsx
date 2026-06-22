@@ -82,7 +82,7 @@ export default function RegisterPage() {
         setEstado("directo");
         setTimeout(() => {
           window.location.href = "/dashboard";
-        }, 2800);
+        }, 5000);
         return;
       }
 
@@ -90,7 +90,7 @@ export default function RegisterPage() {
       setEstado("confirmar");
       setTimeout(() => {
         window.location.href = "/confirmar-email";
-      }, 2800);
+      }, 5000);
     });
   }
 
