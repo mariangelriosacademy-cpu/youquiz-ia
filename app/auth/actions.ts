@@ -44,13 +44,14 @@ return { error: error.message || error.code || JSON.stringify(error) || "Error a
 
   // Intentar crear perfil (el trigger de Supabase también lo hace, esto es fallback)
   try {
-    await supabase.from("profiles").upsert({
+    const { error: perfilError } = await supabase.from("profiles").upsert({
       id: data.user.id,
       email,
       nombre: name,
       plan: "free",
       examenes_mes: 0,
     }, { onConflict: "id" });
+    if (perfilError) console.error("Error perfil:", perfilError);
   } catch (e) {
     console.error("Error creando perfil:", e);
   }
