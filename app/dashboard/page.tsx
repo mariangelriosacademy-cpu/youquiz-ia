@@ -58,7 +58,6 @@ export default function DashboardPage() {
     cargar();
   }, []);
 
-  // Rotación automática cada 4 segundos
   useEffect(() => {
     const interval = setInterval(() => {
       setBannerIdx(prev => (prev + 1) % BANNERS.length);
@@ -121,7 +120,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* BANNER ROTATIVO DE AFILIADOS CON IMAGEN DE FONDO */}
+        {/* BANNER ROTATIVO DE AFILIADOS */}
         <div className="relative mb-4 rounded-2xl overflow-hidden h-44"
           style={{
             backgroundImage: `url(${banner.imagen})`,
@@ -129,22 +128,26 @@ export default function DashboardPage() {
             backgroundPosition: "center",
           }}>
 
-          {/* Overlay degradado */}
-          <div className={`absolute inset-0 bg-gradient-to-r ${banner.overlay}`} />
+          {/* Overlay — pointer-events-none para no bloquear clics */}
+          <div
+            className={`absolute inset-0 bg-gradient-to-r ${banner.overlay}`}
+            style={{ pointerEvents: "none" }}
+          />
 
-          {/* Botón WhatsApp */}
+          {/* Botón WhatsApp — encima de todo */}
           <a
             href="https://wa.me/573005062600?text=Hola%2C%20quiero%20unirme%20al%20programa%20de%20afiliados%20de%20YouQuiz%20IA%20%F0%9F%9A%80"
             target="_blank"
             rel="noopener noreferrer"
-            className="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow transition"
+            style={{ position: "absolute", top: "12px", right: "12px", zIndex: 50 }}
+            className="flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg transition"
           >
             <MessageCircle size={13} />
             Quiero ser afiliado
           </a>
 
           {/* Contenido */}
-          <div className="relative z-10 h-full flex flex-col justify-between p-5">
+          <div className="relative h-full flex flex-col justify-between p-5" style={{ zIndex: 10 }}>
             <div>
               <span className="inline-block bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full mb-2 backdrop-blur-sm">
                 {banner.emoji} {banner.badge}
@@ -157,7 +160,6 @@ export default function DashboardPage() {
               </p>
             </div>
 
-            {/* Link de afiliado */}
             {linkAfiliado && (
               <div className="flex items-center gap-2 mt-2">
                 <div className="flex-1 bg-black/30 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs text-white/70 truncate font-mono">
@@ -172,12 +174,19 @@ export default function DashboardPage() {
           </div>
 
           {/* Indicadores de slide */}
-          <div className="absolute bottom-3 right-5 flex gap-1.5 z-10">
+          <div style={{ position: "absolute", bottom: "12px", right: "20px", zIndex: 10, display: "flex", gap: "6px" }}>
             {BANNERS.map((_, i) => (
               <button key={i} onClick={() => setBannerIdx(i)}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === bannerIdx ? "bg-white w-4" : "bg-white/40 w-1.5"
-                }`} />
+                style={{
+                  height: "6px",
+                  width: i === bannerIdx ? "16px" : "6px",
+                  borderRadius: "9999px",
+                  background: i === bannerIdx ? "white" : "rgba(255,255,255,0.4)",
+                  transition: "all 0.3s",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                }} />
             ))}
           </div>
         </div>
