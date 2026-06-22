@@ -7,40 +7,40 @@ const PLANES = [
   {
     id: "starter",
     nombre: "Starter",
-    precio: 2,
+    precio: 3.90,
     creditos: 15,
     color: "border-white/10",
     bgColor: "bg-white/5",
     btnColor: "bg-white/10 hover:bg-white/20 text-white",
     badge: null,
     descripcion: "Para probar YouQuiz IA sin riesgo",
-    hotmartLink: "#",
+    hotmartLink: "https://pay.hotmart.com/M106435914T",
     bonus: false,
   },
   {
     id: "plus",
     nombre: "Plus",
-    precio: 4,
+    precio: 6.90,
     creditos: 35,
     color: "border-violet-500",
     bgColor: "bg-violet-600/10",
     btnColor: "bg-violet-600 hover:bg-violet-500 text-white",
     badge: "⭐ MÁS POPULAR",
     descripcion: "El favorito de los docentes",
-    hotmartLink: "#",
+    hotmartLink: "https://pay.hotmart.com/L106435964K",
     bonus: true,
   },
   {
     id: "pro",
     nombre: "Pro",
-    precio: 6,
+    precio: 9.90,
     creditos: 60,
     color: "border-cyan-500/50",
     bgColor: "bg-cyan-600/5",
     btnColor: "bg-cyan-600 hover:bg-cyan-500 text-white",
     badge: "🔥 MEJOR VALOR",
     descripcion: "Para docentes activos",
-    hotmartLink: "#",
+    hotmartLink: "https://pay.hotmart.com/V106435972N",
     bonus: true,
   },
 ];
@@ -185,7 +185,6 @@ export default function PreciosPage() {
           ))}
         </div>
 
-        {/* Instrucciones */}
         <div className="bg-violet-600/10 border border-violet-500/20 rounded-2xl p-5 mb-6 text-center">
           <p className="text-violet-400 font-semibold text-sm mb-2">📩 ¿Cómo funciona?</p>
           <ol className="text-slate-400 text-xs space-y-1">
