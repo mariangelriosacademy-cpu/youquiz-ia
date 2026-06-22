@@ -14,7 +14,7 @@ const PLANES = [
     btnColor: "bg-white/10 hover:bg-white/20 text-white",
     badge: null,
     descripcion: "Para probar YouQuiz IA sin riesgo",
-    paypalLink: "https://paypal.me/Mari01ve/2",
+    hotmartLink: "#",
     bonus: false,
   },
   {
@@ -27,7 +27,7 @@ const PLANES = [
     btnColor: "bg-violet-600 hover:bg-violet-500 text-white",
     badge: "⭐ MÁS POPULAR",
     descripcion: "El favorito de los docentes",
-    paypalLink: "https://paypal.me/Mari01ve/4",
+    hotmartLink: "#",
     bonus: true,
   },
   {
@@ -40,7 +40,7 @@ const PLANES = [
     btnColor: "bg-cyan-600 hover:bg-cyan-500 text-white",
     badge: "🔥 MEJOR VALOR",
     descripcion: "Para docentes activos",
-    paypalLink: "https://paypal.me/Mari01ve/6",
+    hotmartLink: "#",
     bonus: true,
   },
 ];
@@ -84,7 +84,7 @@ export default function PreciosPage() {
             { icon: "⚡", text: "1 crédito = 1 examen" },
             { icon: "♾️", text: "Los créditos no vencen" },
             { icon: "📝", text: "5 a 30 preguntas" },
-            { icon: "💳", text: "Pago único por PayPal" },
+            { icon: "🔒", text: "Pago seguro con Hotmart" },
           ].map((item) => (
             <div key={item.text} className="flex items-center gap-2 text-slate-400 text-sm">
               <span>{item.icon}</span>
@@ -161,7 +161,6 @@ export default function PreciosPage() {
                 ))}
               </ul>
 
-              {/* BONUS TAG por plan */}
               {plan.bonus ? (
                 <div className="mb-4 flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 rounded-xl px-3 py-2">
                   <span className="text-lg">🎁</span>
@@ -174,29 +173,26 @@ export default function PreciosPage() {
                 </div>
               )}
 
-              <div className="space-y-2">
-                <a href={plan.paypalLink} target="_blank" rel="noopener noreferrer"
-                  className={`w-full py-3 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2 ${plan.btnColor}`}>
-                  <Zap size={14} />
-                  Pagar por PayPal
-                </a>
-                <button onClick={() => router.push(`/dashboard/comprobante?plan=${plan.id}`)}
-                  className="w-full py-2.5 rounded-xl text-xs font-medium border border-white/10 text-slate-400 hover:text-white hover:border-violet-500/50 transition">
-                  📤 Ya pagué — subir comprobante
-                </button>
-              </div>
+              <a
+                href={plan.hotmartLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`w-full py-3 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2 ${plan.btnColor}`}>
+                <Zap size={14} />
+                Comprar ahora
+              </a>
             </div>
           ))}
         </div>
 
-        {/* Instrucciones post-pago */}
+        {/* Instrucciones */}
         <div className="bg-violet-600/10 border border-violet-500/20 rounded-2xl p-5 mb-6 text-center">
           <p className="text-violet-400 font-semibold text-sm mb-2">📩 ¿Cómo funciona?</p>
           <ol className="text-slate-400 text-xs space-y-1">
-            <li>1. Elige tu plan y paga por PayPal</li>
-            <li>2. Haz clic en "Ya pagué — subir comprobante"</li>
-            <li>3. Sube la captura de tu pago</li>
-            <li>4. Activamos tus créditos en menos de 24 horas ✅</li>
+            <li>1. Elige tu plan y haz clic en "Comprar ahora"</li>
+            <li>2. Completa tu compra de forma segura en Hotmart</li>
+            <li>3. Tus créditos se activan automáticamente ✅</li>
+            <li>4. Recibes los +55 Prompts en tu correo si compraste Plus o Pro 🎁</li>
           </ol>
         </div>
 
@@ -205,9 +201,9 @@ export default function PreciosPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
               { q: "¿Los créditos vencen?", a: "No. Tus créditos son permanentes, úsalos cuando quieras." },
-              { q: "¿Cómo pago?", a: "Por PayPal — seguro, rápido y disponible en toda Latinoamérica." },
+              { q: "¿Cómo pago?", a: "A través de Hotmart — seguro, rápido y disponible en toda Latinoamérica." },
               { q: "¿Cuántas preguntas puedo poner?", a: "De 5 a 30 preguntas por examen — siempre 1 crédito." },
-              { q: "¿Cómo recibo los prompts?", a: "Te enviamos el enlace de Genially al activar tu plan Plus o Pro." },
+              { q: "¿Cómo recibo los prompts?", a: "Te llegará el enlace automáticamente a tu correo al comprar Plus o Pro." },
             ].map((item) => (
               <div key={item.q}>
                 <p className="text-white text-sm font-medium">{item.q}</p>
@@ -219,7 +215,7 @@ export default function PreciosPage() {
 
         <div className="text-center space-y-3">
           <p className="text-slate-500 text-sm">
-            🔒 Pago seguro via PayPal · Soporte en español · Sin compromisos
+            🔒 Pago seguro via Hotmart · Soporte en español · Sin compromisos
           </p>
           <button onClick={() => router.push("/dashboard")}
             className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition mx-auto">

@@ -24,7 +24,7 @@ export default function ConfirmarEmailPage() {
 
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <img src="/logo.png" alt="YouQuiz IA" className="h-12 w-auto" />
+          <img src="/logo.png" alt="YouQuiz IA" className="h-auto w-auto" style={{ width: "150px" }} />
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
