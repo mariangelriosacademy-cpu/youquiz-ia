@@ -35,7 +35,7 @@ export async function register(formData: FormData) {
       return { error: "Este correo ya tiene una cuenta. Inicia sesión." };
     if (error.message.includes("rate limit") || error.message.includes("email") || error.status === 429)
   return { error: "Límite de correos alcanzado. Espera unos minutos e intenta de nuevo." };
-return { error: error.message || "Error al crear la cuenta. Intenta de nuevo." };
+return { error: error.message || error.code || JSON.stringify(error) || "Error al crear la cuenta. Intenta de nuevo." };
   }
 
   if (!data.user) {
