@@ -20,6 +20,7 @@ interface Pregunta {
 interface Examen {
   titulo: string;
   preguntas: Pregunta[];
+  tipo_evaluacion?: { finalidad: string; participante: string };
 }
 
 const PAISES = [
@@ -74,6 +75,19 @@ const GRADOS = [
   { grupo: "Universidad", opciones: ["1er semestre", "2do semestre", "3er semestre", "4to semestre", "5to semestre", "6to semestre", "7mo semestre", "8vo semestre"] },
 ];
 
+const FINALIDADES = [
+  { value: "", label: "General (sin clasificar)" },
+  { value: "diagnostica", label: "🔍 Diagnóstica — Conocimientos previos", desc: "Antes del tema" },
+  { value: "formativa", label: "📈 Formativa — Durante el proceso", desc: "Orientar el aprendizaje" },
+  { value: "sumativa", label: "🎓 Sumativa — Al final del ciclo", desc: "Calificación final" },
+];
+
+const PARTICIPANTES = [
+  { value: "heteroevaluacion", label: "👩‍🏫 Heteroevaluación", desc: "Docente evalúa al estudiante" },
+  { value: "autoevaluacion", label: "🪞 Autoevaluación", desc: "Estudiante evalúa su propio aprendizaje" },
+  { value: "coevaluacion", label: "👥 Coevaluación", desc: "Estudiantes evalúan entre pares" },
+];
+
 function GenerarPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -91,6 +105,8 @@ function GenerarPage() {
   const [institucion, setInstitucion] = useState("");
   const [docente, setDocente] = useState("");
   const [seccion, setSeccion] = useState("");
+  const [finalidad, setFinalidad] = useState("");
+  const [participante, setParticipante] = useState("heteroevaluacion");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [examen, setExamen] = useState<Examen | null>(null);
@@ -148,7 +164,7 @@ function GenerarPage() {
       const res = await fetch("/api/generate-exam", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tema, nivel, cantidad, tipos, pais, asignatura: asignaturaFinal, grado: gradoFinal }),
+        body: JSON.stringify({ tema, nivel, cantidad, tipos, pais, asignatura: asignaturaFinal, grado: gradoFinal, finalidad, participante }),
       });
       const data = await res.json();
       if (data.error) { setError(data.error); return; }
@@ -191,7 +207,7 @@ function GenerarPage() {
         titulo: examen.titulo,
         tema,
         preguntas: examen.preguntas,
-        tipo: "tema",
+        tipo: finalidad || "tema",
         docente_nombre: docente,
         asignatura: asignaturaFinal,
         grado: gradoFinal,
@@ -210,9 +226,7 @@ function GenerarPage() {
       .update({ creditos: perfil.creditos - 1 })
       .eq("id", user.id);
 
-    // ✅ FIX sincronización: notificar al layout para que refresque los créditos
     window.dispatchEvent(new CustomEvent("creditos-actualizados"));
-
     router.push(`/dashboard/examen/${data.id}`);
   }
 
@@ -224,7 +238,7 @@ function GenerarPage() {
       const res = await fetch("/api/generate-exam", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tema, nivel: nivelDuplicar, cantidad, tipos, pais, asignatura: asignaturaFinal, grado: gradoFinal }),
+        body: JSON.stringify({ tema, nivel: nivelDuplicar, cantidad, tipos, pais, asignatura: asignaturaFinal, grado: gradoFinal, finalidad, participante }),
       });
       const data = await res.json();
       if (data.error) { setError(data.error); return; }
@@ -349,6 +363,12 @@ function GenerarPage() {
     doc.save(`${examen.titulo}.pdf`);
   }
 
+  const etiquetaFinalidad = finalidad
+    ? FINALIDADES.find(f => f.value === finalidad)?.label || ""
+    : "";
+
+  const etiquetaParticipante = PARTICIPANTES.find(p => p.value === participante)?.label || "";
+
   return (
     <>
       <style>{`@media print { .no-print { display: none !important; } body { background: white !important; color: black !important; } }`}</style>
@@ -460,6 +480,43 @@ function GenerarPage() {
                     <textarea id="campo-tema" rows={2} placeholder="Ej: La fotosíntesis, Fracciones..."
                       value={tema} onChange={(e) => setTema(e.target.value)}
                       className="w-full bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none transition" />
+                  </div>
+
+                  {/* CLASIFICACIÓN PEDAGÓGICA */}
+                  <div className="border border-cyan-500/20 bg-cyan-600/5 rounded-xl p-4 space-y-3">
+                    <h3 className="text-sm font-semibold text-cyan-400">🎓 Tipo de evaluación</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-medium text-slate-400">Finalidad</label>
+                        <select value={finalidad} onChange={(e) => setFinalidad(e.target.value)}
+                          className="w-full bg-[#1a1a2e] border border-white/10 text-white rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                          {FINALIDADES.map(f => (
+                            <option key={f.value} value={f.value}>{f.label}</option>
+                          ))}
+                        </select>
+                        {finalidad && (
+                          <p className="text-xs text-cyan-400/70">
+                            {finalidad === "diagnostica" && "Evalúa conocimientos previos al inicio del tema"}
+                            {finalidad === "formativa" && "Orienta el aprendizaje durante el proceso"}
+                            {finalidad === "sumativa" && "Mide el aprendizaje total al final del ciclo"}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-medium text-slate-400">¿Quién evalúa?</label>
+                        <select value={participante} onChange={(e) => setParticipante(e.target.value)}
+                          className="w-full bg-[#1a1a2e] border border-white/10 text-white rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                          {PARTICIPANTES.map(p => (
+                            <option key={p.value} value={p.value}>{p.label}</option>
+                          ))}
+                        </select>
+                        <p className="text-xs text-cyan-400/70">
+                          {participante === "heteroevaluacion" && "El docente evalúa al estudiante"}
+                          {participante === "autoevaluacion" && "El estudiante reflexiona sobre su aprendizaje"}
+                          {participante === "coevaluacion" && "Los estudiantes evalúan entre pares"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -590,7 +647,17 @@ function GenerarPage() {
                   <div className="no-print flex items-center justify-between mb-4 flex-wrap gap-2">
                     <div>
                       <h2 className="text-base font-semibold text-white">{examen.titulo}</h2>
-                      <p className="text-xs text-slate-400">{examen.preguntas.length} preguntas · {paisInfo?.escala} pts</p>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <p className="text-xs text-slate-400">{examen.preguntas.length} preguntas · {paisInfo?.escala} pts</p>
+                        {finalidad && (
+                          <span className="text-xs bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded-full">
+                            {finalidad === "diagnostica" ? "🔍 Diagnóstica" : finalidad === "formativa" ? "📈 Formativa" : "🎓 Sumativa"}
+                          </span>
+                        )}
+                        <span className="text-xs bg-violet-500/20 text-violet-400 px-2 py-0.5 rounded-full">
+                          {participante === "heteroevaluacion" ? "👩‍🏫 Hetero" : participante === "autoevaluacion" ? "🪞 Auto" : "👥 Co"}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex gap-2 flex-wrap">
                       <button onClick={generarExamen} disabled={loading}

@@ -193,6 +193,11 @@ export default function PreciosPage() {
             <li>3. Tus créditos se activan automáticamente ✅</li>
             <li>4. Recibes los +55 Prompts en tu correo si compraste Plus o Pro 🎁</li>
           </ol>
+          <div className="mt-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl px-4 py-2">
+  <p className="text-yellow-400 text-xs">
+    ⚠️ <strong>Importante:</strong> Usa el mismo correo con el que te registraste en YouQuiz IA al momento de pagar en Hotmart para que tus créditos se activen automáticamente.
+  </p>
+</div>
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8">
