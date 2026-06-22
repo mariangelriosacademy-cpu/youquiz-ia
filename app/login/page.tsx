@@ -36,7 +36,7 @@ function LoginContent() {
   return (
     <main className="min-h-screen bg-[#0F0F1A] flex items-center justify-center px-4">
 
-      {/* Toast de bienvenida centrado */}
+      {/* Toast centrado con margin auto */}
       {success && (
         <>
           <style>{`
@@ -48,16 +48,17 @@ function LoginContent() {
           <div style={{
             position: "fixed",
             top: "24px",
-            left: "50%",
-            transform: "translateX(-50%)",
+            left: "0",
+            right: "0",
+            width: "fit-content",
+            margin: "0 auto",
             zIndex: 9999,
             animation: "slideDown 0.4s ease-out forwards",
-            whiteSpace: "nowrap",
           }}
             className="flex items-center gap-3 bg-green-500 text-white px-6 py-3 rounded-2xl shadow-2xl"
           >
             <CheckCircle size={20} />
-            <span className="font-semibold text-sm">¡Bienvenido de vuelta! 👋</span>
+            <span className="font-semibold text-sm whitespace-nowrap">¡Bienvenido de vuelta! 👋</span>
           </div>
         </>
       )}
@@ -68,13 +69,9 @@ function LoginContent() {
       </div>
 
       <div className="relative w-full max-w-md">
-        <div className="text-center mb-8">
-          <span className="inline-flex items-center gap-2 text-2xl font-bold text-white">
-            <span className="text-yellow-400 font-black tracking-tight">You</span>
-            <span className="text-violet-400 font-black tracking-tight">Quiz</span>
-            <span className="bg-violet-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">IA</span>
-          </span>
-          <p className="mt-2 text-slate-400 text-sm">Bienvenido de vuelta</p>
+        {/* LOGO */}
+        <div className="flex justify-center mb-8">
+          <img src="/logo.png" alt="YouQuiz IA" className="h-12 w-auto" />
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
