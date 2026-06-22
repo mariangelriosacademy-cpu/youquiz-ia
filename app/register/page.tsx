@@ -47,7 +47,6 @@ function Confeti() {
 
 export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
-  // "idle" | "confirmar" | "directo"
   const [estado, setEstado] = useState<"idle" | "confirmar" | "directo">("idle");
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
@@ -73,12 +72,15 @@ export default function RegisterPage() {
       const result = await register(formData);
 
       if (result?.error) {
-        setError(result.error || "Error desconocido. Intenta de nuevo.");
+        // Asegurar que siempre sea un string legible
+        const msg = typeof result.error === "string"
+          ? result.error
+          : "Error al crear la cuenta. Intenta de nuevo.";
+        setError(msg);
         return;
       }
 
       if (result?.directo) {
-        // Supabase no requiere confirmación: mostramos confeti y redirigimos al dashboard
         setEstado("directo");
         setTimeout(() => {
           window.location.href = "/dashboard";
@@ -86,7 +88,6 @@ export default function RegisterPage() {
         return;
       }
 
-      // Caso normal: Supabase envió el correo de confirmación
       setEstado("confirmar");
       setTimeout(() => {
         window.location.href = "/confirmar-email";
@@ -98,7 +99,6 @@ export default function RegisterPage() {
 
   return (
     <main className="min-h-screen bg-[#0F0F1A] flex items-center justify-center px-4">
-      {/* Confeti solo cuando el registro fue exitoso */}
       {registroExitoso && <Confeti />}
 
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -107,13 +107,8 @@ export default function RegisterPage() {
       </div>
 
       <div className="relative w-full max-w-md">
-        <div className="text-center mb-8">
-          <span className="inline-flex items-center gap-2 text-2xl font-bold text-white">
-            <span className="text-yellow-400 font-black tracking-tight">You</span>
-            <span className="text-violet-400 font-black tracking-tight">Quiz</span>
-            <span className="bg-violet-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">IA</span>
-          </span>
-          <p className="mt-2 text-slate-400 text-sm">Crea tu cuenta y empieza a generar exámenes</p>
+        <div className="flex justify-center mb-8">
+          <img src="/logo.png" alt="YouQuiz IA" style={{ width: "150px", height: "auto" }} />
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
