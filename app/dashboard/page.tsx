@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
-import { Sparkles, ClipboardList, Copy, Check } from "lucide-react";
+import { Sparkles, ClipboardList, Copy, Check, MessageCircle } from "lucide-react";
 import { useTheme } from "./theme-context";
 
 export default function DashboardPage() {
@@ -129,8 +129,19 @@ export default function DashboardPage() {
             backgroundPosition: "center",
           }}>
 
-          {/* Overlay degradado para legibilidad */}
+          {/* Overlay degradado */}
           <div className={`absolute inset-0 bg-gradient-to-r ${banner.overlay}`} />
+
+          {/* Botón WhatsApp */}
+          <a
+            href="https://wa.me/573005062600?text=Hola%2C%20quiero%20unirme%20al%20programa%20de%20afiliados%20de%20YouQuiz%20IA%20%F0%9F%9A%80"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow transition"
+          >
+            <MessageCircle size={13} />
+            Quiero ser afiliado
+          </a>
 
           {/* Contenido */}
           <div className="relative z-10 h-full flex flex-col justify-between p-5">
