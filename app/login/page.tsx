@@ -39,7 +39,7 @@ function LoginContent() {
 
       {/* Toast de bienvenida — aparece 2.5s antes del redirect */}
       {success && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-green-500 text-white px-6 py-3 rounded-2xl shadow-2xl"
+        <div className="fixed top-6 z-50 flex items-center gap-3 bg-green-500 text-white px-6 py-3 rounded-2xl shadow-2xl mx-auto left-0 right-0 w-fit"
           style={{ animation: "slideDown 0.4s ease-out forwards" }}>
           <CheckCircle size={20} />
           <span className="font-semibold text-sm whitespace-nowrap">¡Bienvenido de vuelta! 👋</span>

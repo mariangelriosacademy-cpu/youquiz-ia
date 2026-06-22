@@ -34,7 +34,7 @@ export default function DashboardPage() {
     {
       emoji: "🚀",
       titulo: "Tu link, tus ganancias",
-      texto: "Cada docente que compre Plus ($4) o Pro ($6) te da $2 o $3 directo a tu PayPal.",
+      texto: "Cada docente que compre Plus ($4) o Pro ($6) acumula $2 o $3 en tu cuenta Hotmart.",
       badge: "50% de comisión",
       imagen: "/banner-docente2.jpg",
       overlay: "from-cyan-900/80 to-blue-900/70",
