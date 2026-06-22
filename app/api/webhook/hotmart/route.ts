@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     if (!producto?.id) {
       console.error("Producto ID no encontrado en el body");
-      return NextResponse.json({ error: "Producto ID no encontrado", body }, { status: 400 });
+      return NextResponse.json({ error: "Producto ID no encontrado", body }, { status: 200 });
     }
 
     const email = comprador.email.toLowerCase().trim();
