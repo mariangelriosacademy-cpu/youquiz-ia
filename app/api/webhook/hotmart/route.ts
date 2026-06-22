@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// Créditos por producto Hotmart
 const CREDITOS_POR_PRODUCTO: Record<string, number> = {
   "7980108": 15, // Starter
   "7980130": 35, // Plus
   "7980134": 60, // Pro
 };
 
-// Plan por producto
 const PLAN_POR_PRODUCTO: Record<string, string> = {
   "7980108": "starter",
   "7980130": "plus",
@@ -19,36 +17,67 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Verificar que es un evento de compra aprobada
+    // Log completo para debug
+    console.log("Webhook Hotmart recibido:", JSON.stringify(body, null, 2));
+
     const evento = body?.event;
-    if (evento !== "PURCHASE_APPROVED" && evento !== "PURCHASE_COMPLETE") {
-      return NextResponse.json({ message: "Evento ignorado" }, { status: 200 });
+    console.log("Evento:", evento);
+
+    // Aceptar cualquier evento de compra
+    const eventosValidos = [
+      "PURCHASE_APPROVED",
+      "PURCHASE_COMPLETE",
+      "PURCHASE_BILLET_PRINTED",
+    ];
+
+    if (!eventosValidos.includes(evento)) {
+      console.log("Evento ignorado:", evento);
+      return NextResponse.json({ message: "Evento ignorado", evento }, { status: 200 });
     }
 
-    // Extraer datos del comprador
-    const comprador = body?.data?.buyer;
-    const producto = body?.data?.product;
+    // Hotmart v2 — distintas rutas posibles para el email
+    const comprador =
+      body?.data?.buyer ||
+      body?.data?.purchase?.buyer ||
+      body?.buyer ||
+      null;
 
-    if (!comprador?.email || !producto?.id) {
-      return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
+    const producto =
+      body?.data?.product ||
+      body?.data?.purchase?.product ||
+      body?.product ||
+      null;
+
+    console.log("Comprador:", comprador);
+    console.log("Producto:", producto);
+
+    if (!comprador?.email) {
+      console.error("Email no encontrado en el body");
+      return NextResponse.json({ error: "Email no encontrado", body }, { status: 400 });
     }
 
-    const email = comprador.email.toLowerCase();
+    if (!producto?.id) {
+      console.error("Producto ID no encontrado en el body");
+      return NextResponse.json({ error: "Producto ID no encontrado", body }, { status: 400 });
+    }
+
+    const email = comprador.email.toLowerCase().trim();
     const productoId = String(producto.id);
     const creditos = CREDITOS_POR_PRODUCTO[productoId];
     const plan = PLAN_POR_PRODUCTO[productoId];
 
+    console.log("Email:", email, "ProductoID:", productoId, "Créditos:", creditos);
+
     if (!creditos) {
-      return NextResponse.json({ error: "Producto no reconocido" }, { status: 400 });
+      console.error("Producto no reconocido:", productoId);
+      return NextResponse.json({ error: "Producto no reconocido", productoId }, { status: 200 });
     }
 
-    // Conectar a Supabase con service role (bypasa RLS)
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // Buscar el perfil por email
     const { data: perfil, error: errorPerfil } = await supabase
       .from("profiles")
       .select("id, creditos, plan")
@@ -57,18 +86,15 @@ export async function POST(request: NextRequest) {
 
     if (errorPerfil || !perfil) {
       console.error("Perfil no encontrado para:", email);
-      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+      // Retornar 200 para que Hotmart no siga reintentando
+      return NextResponse.json({ message: "Usuario no registrado aún", email }, { status: 200 });
     }
 
-    // Sumar créditos sin perder los que ya tenía
     const creditosNuevos = (perfil.creditos || 0) + creditos;
 
     const { error: errorUpdate } = await supabase
       .from("profiles")
-      .update({
-        creditos: creditosNuevos,
-        plan: plan,
-      })
+      .update({ creditos: creditosNuevos, plan })
       .eq("id", perfil.id);
 
     if (errorUpdate) {
@@ -76,7 +102,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Error actualizando créditos" }, { status: 500 });
     }
 
-    console.log(`✅ Créditos activados: ${email} → +${creditos} créditos (total: ${creditosNuevos})`);
+    console.log(`✅ Créditos activados: ${email} → +${creditos} (total: ${creditosNuevos})`);
 
     return NextResponse.json({
       success: true,
@@ -86,8 +112,8 @@ export async function POST(request: NextRequest) {
       plan,
     });
 
-  } catch (error) {
-    console.error("Error en webhook Hotmart:", error);
+  } catch (error: any) {
+    console.error("Error en webhook Hotmart:", error?.message || error);
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
   }
 }
